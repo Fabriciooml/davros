@@ -1,0 +1,22 @@
+# Terraform/OpenTofu state and local cache - never commit, contains plaintext secrets
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl.bak
+
+# Variable files with real credentials - only *.tfvars.example is committed
+*.tfvars
+!*.tfvars.example
+
+# Talos / kubernetes credentials - these live in ~/.talos and ~/.kube, never in-repo
+talosconfig
+kubeconfig
+*.kubeconfig
+
+# SOPS/age private key material - public key only ever referenced via .sops.yaml
+*.agekey
+age-keys.txt
+
+# OS/editor noise
+.DS_Store
+*.swp
