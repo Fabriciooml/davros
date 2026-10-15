@@ -4,7 +4,3 @@ resources:
   - namespace.yaml
   - helmrepository.yaml
   - helmrelease.yaml
-  - local-wildcard-certificate.yaml
-  - public-wildcard-certificate.yaml
-  - tlsstore.yaml
-  - dashboard-ingressroute.yaml

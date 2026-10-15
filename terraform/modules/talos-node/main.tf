@@ -37,6 +37,7 @@ locals {
       proxy = {
         disabled = true
       }
+      allowSchedulingOnControlPlanes = true
     }
   })
 }

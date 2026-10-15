@@ -204,6 +204,11 @@ run "cp_node_zero_machine_config_has_hostname_and_static_ip" {
     condition     = yamldecode(output.machine_config).cluster.proxy.disabled == true
     error_message = "kube-proxy must be disabled so cilium's replacement can take over"
   }
+
+  assert {
+    condition     = yamldecode(output.machine_config).cluster.allowSchedulingOnControlPlanes == true
+    error_message = "control-plane nodes must be schedulable, otherwise they keep the default NoSchedule taint and nothing without a blanket toleration (cilium aside) can ever run on this single-node-worth-of-cp-only cluster"
+  }
 }
 
 run "cp_node_machine_config_has_vip" {

@@ -3,5 +3,3 @@ kind: Kustomization
 resources:
   - helmrepository.yaml
   - helmrelease.yaml
-  - lb-ip-pool.yaml
-  - l2-announcement-policy.yaml

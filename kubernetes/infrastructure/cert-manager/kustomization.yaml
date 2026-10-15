@@ -4,6 +4,3 @@ resources:
   - namespace.yaml
   - helmrepository.yaml
   - helmrelease.yaml
-  - cloudflare-api-token.sops.yaml
-  - clusterissuer-staging.yaml
-  - clusterissuer-production.yaml
