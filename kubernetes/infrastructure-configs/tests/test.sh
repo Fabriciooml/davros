@@ -6,7 +6,7 @@ built=$(kustomize build .)
 
 echo "$built" | kubeconform -strict -ignore-missing-schemas -skip Secret -summary
 
-for kind in CiliumLoadBalancerIPPool ClusterIssuer Certificate; do
+for kind in ClusterIssuer Certificate; do
   found=$(echo "$built" | yq e "select(.kind == \"$kind\")" -)
   [ -n "$found" ] || { echo "FAIL: $kind missing from the aggregated infrastructure-configs build"; exit 1; }
 done

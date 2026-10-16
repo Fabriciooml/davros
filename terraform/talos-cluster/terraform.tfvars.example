@@ -1,2 +1,0 @@
-proxmox_api_endpoint = "https://192.168.31.42:8006/"
-proxmox_api_token    = "terraform@pve!davros=00000000-0000-0000-0000-000000000000"

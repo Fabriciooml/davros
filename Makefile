@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 .SHELLFLAGS := -eu -o pipefail -c
 
-TF_ROOTS := terraform/talos-cluster terraform/cloudflare
+TF_ROOTS := terraform/k3s-cluster terraform/cloudflare
 AGE_KEY_FILE ?= $(HOME)/.config/sops/age/keys.txt
 
 .PHONY: help
@@ -9,13 +9,20 @@ help:
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "%-22s %s\n", $$1, $$2}'
 
 .PHONY: test
-test: test-terraform test-kubernetes ## run every tofu test and every kustomize-build test, no real infra touched
+test: test-terraform test-scripts test-kubernetes ## run every tofu test, standalone script test, and kustomize-build test, no real infra touched
 
 .PHONY: test-terraform
 test-terraform:
 	@for dir in $$(find terraform -name '*.tftest.hcl' -exec dirname {} \; | sed 's#/tests$$##' | sort -u); do \
 		echo "== tofu test: $$dir =="; \
 		(cd "$$dir" && tofu init -input=false >/dev/null && tofu test); \
+	done
+
+.PHONY: test-scripts
+test-scripts:
+	@for script in $$(find terraform -path '*/tests/*.test.sh' | sort); do \
+		echo "== script test: $$script =="; \
+		bash "$$script"; \
 	done
 
 .PHONY: test-kubernetes
@@ -39,14 +46,14 @@ validate: ## tofu validate every terraform root and module
 	done
 
 .PHONY: init
-init: ## tofu init the two deployable roots (talos-cluster, cloudflare)
+init: ## tofu init the two deployable roots (k3s-cluster, cloudflare)
 	@for dir in $(TF_ROOTS); do \
 		(cd "$$dir" && tofu init); \
 	done
 
 .PHONY: plan-cluster
-plan-cluster: ## show what applying the talos cluster would change, no real infra touched
-	cd terraform/talos-cluster && tofu plan
+plan-cluster: ## show what applying the k3s cluster would change, no real infra touched
+	cd terraform/k3s-cluster && tofu plan
 
 .PHONY: confirm
 confirm:
@@ -54,15 +61,15 @@ confirm:
 	[ "$$reply" = "yes" ] || { echo "aborted"; exit 1; }
 
 .PHONY: apply-cluster
-apply-cluster: ## create the talos vms on proxmox and render their machine configs -- REAL CHANGE
-	$(MAKE) confirm MSG="about to create/update VMs on your proxmox host."
-	cd terraform/talos-cluster && tofu apply
+apply-cluster: ## create the k3s lxc node on proxmox and install k3s on it -- REAL CHANGE
+	$(MAKE) confirm MSG="about to create/update the k3s lxc node on your proxmox host."
+	cd terraform/k3s-cluster && tofu apply
 
 .PHONY: destroy-cluster
-destroy-cluster: ## destroy the talos vms on proxmox -- REAL, DESTRUCTIVE CHANGE
-	$(MAKE) confirm MSG="about to DESTROY the talos VMs on your proxmox host."
+destroy-cluster: ## destroy the k3s lxc node on proxmox -- REAL, DESTRUCTIVE CHANGE
+	$(MAKE) confirm MSG="about to DESTROY the k3s node on your proxmox host."
 	$(MAKE) confirm MSG="really sure? this cannot be undone."
-	cd terraform/talos-cluster && tofu destroy
+	cd terraform/k3s-cluster && tofu destroy
 
 .PHONY: plan-cloudflare
 plan-cloudflare: ## show what applying the cloudflare config would change, no real infra touched
@@ -73,30 +80,10 @@ apply-cloudflare: ## create/update cloudflare dns records and tunnel ingress rul
 	$(MAKE) confirm MSG="about to change DNS records and tunnel ingress rules on cloudflare."
 	cd terraform/cloudflare && tofu apply
 
-.PHONY: talos-bootstrap
-talos-bootstrap: ## bootstrap etcd on the first control-plane node -- REAL CHANGE, run once per cluster lifetime
-	$(MAKE) confirm MSG="about to bootstrap etcd on the talos cluster. only do this once."
-	talosctl bootstrap --nodes $$(cd terraform/talos-cluster && tofu output -raw -json node_ips | python3 -c 'import json,sys; print(json.load(sys.stdin)["cp-0"])')
-
 .PHONY: kubeconfig
-kubeconfig: ## merge talosconfig and kubeconfig from terraform outputs into ~/.talos and ~/.kube
-	cd terraform/talos-cluster && tofu output -raw talosconfig | talosctl config merge /dev/stdin
-	cd terraform/talos-cluster && tofu output -raw kubeconfig > /tmp/davros-kubeconfig
-	KUBECONFIG=$$HOME/.kube/config:/tmp/davros-kubeconfig kubectl config view --flatten > /tmp/davros-kubeconfig-merged
+kubeconfig: ## merge the k3s-cluster-generated kubeconfig into ~/.kube/config
+	KUBECONFIG=$$HOME/.kube/config:terraform/k3s-cluster/kubeconfig kubectl config view --flatten > /tmp/davros-kubeconfig-merged
 	mv /tmp/davros-kubeconfig-merged $$HOME/.kube/config
-	rm -f /tmp/davros-kubeconfig
-
-.PHONY: cilium-bootstrap
-cilium-bootstrap: ## one-time helm install of cilium, before flux exists -- REAL CHANGE, run once per cluster lifetime
-	$(MAKE) confirm MSG="about to helm-install cilium directly (flux doesn't exist yet)."
-	helm repo add cilium https://helm.cilium.io
-	helm repo update cilium
-	helm install cilium cilium/cilium \
-		--namespace kube-system \
-		--set kubeProxyReplacement=true \
-		--set k8sServiceHost=192.168.31.243 \
-		--set k8sServicePort=6443 \
-		--set l2announcements.enabled=true
 
 .PHONY: flux-bootstrap
 flux-bootstrap: ## wire this repo to the cluster via flux -- REAL CHANGE, run once per cluster lifetime
@@ -108,8 +95,19 @@ flux-bootstrap: ## wire this repo to the cluster via flux -- REAL CHANGE, run on
 		--path=kubernetes/flux-system \
 		--personal
 
+.PHONY: sops-age-key
+sops-age-key: ## generate the sops age keypair if it doesn't already exist -- REAL CHANGE, never overwrites an existing key
+	@if [ -f "$(AGE_KEY_FILE)" ]; then \
+		echo "age key already exists at $(AGE_KEY_FILE), leaving it alone"; \
+	else \
+		$(MAKE) confirm MSG="no age key found at $(AGE_KEY_FILE), about to generate a new one."; \
+		mkdir -p "$$(dirname "$(AGE_KEY_FILE)")"; \
+		age-keygen -o "$(AGE_KEY_FILE)"; \
+		echo "generated new age key at $(AGE_KEY_FILE) -- add its public key to .sops.yaml if not already present"; \
+	fi
+
 .PHONY: sops-age-secret
-sops-age-secret: ## deliver the sops age private key into the cluster so flux can decrypt secrets -- REAL CHANGE
+sops-age-secret: sops-age-key ## deliver the sops age private key into the cluster so flux can decrypt secrets -- REAL CHANGE
 	$(MAKE) confirm MSG="about to put the sops age private key into the flux-system namespace."
 	kubectl create secret generic sops-age \
 		--namespace flux-system \
@@ -119,9 +117,7 @@ sops-age-secret: ## deliver the sops age private key into the cluster so flux ca
 .PHONY: bootstrap
 bootstrap: ## full first-time cluster bring-up, step by step, each step asks to confirm -- REAL CHANGES
 	$(MAKE) apply-cluster
-	$(MAKE) talos-bootstrap
 	$(MAKE) kubeconfig
-	$(MAKE) cilium-bootstrap
 	$(MAKE) flux-bootstrap
 	$(MAKE) sops-age-secret
 	$(MAKE) apply-cloudflare

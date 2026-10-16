@@ -6,7 +6,7 @@ built=$(kustomize build .)
 
 echo "$built" | kubeconform -strict -ignore-missing-schemas -skip Secret -summary
 
-for chart in cilium cert-manager csi-driver-nfs; do
+for chart in cert-manager csi-driver-nfs; do
   found=$(echo "$built" | yq e "select(.kind == \"HelmRelease\" and .spec.chart.spec.chart == \"$chart\")" -)
   [ -n "$found" ] || { echo "FAIL: $chart HelmRelease missing from the aggregated infrastructure build"; exit 1; }
 done

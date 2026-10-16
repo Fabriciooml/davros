@@ -2,6 +2,7 @@
 *.tfstate
 *.tfstate.*
 .terraform/
+.terraform.lock.hcl
 .terraform.lock.hcl.bak
 
 # Variable files with real credentials - only *.tfvars.example is committed
