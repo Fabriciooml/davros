@@ -2,7 +2,7 @@ mock_provider "proxmox" {
   override_resource {
     target = proxmox_virtual_environment_download_file.debian_template
     values = {
-      id = "local:vztmpl/debian-12-standard_12.7-1_amd64.tar.zst"
+      id = "local:vztmpl/debian-12-standard_12.12-1_amd64.tar.zst"
     }
   }
 }
@@ -15,7 +15,7 @@ run "variables_have_expected_defaults" {
     proxmox_api_token    = "test-token"
     proxmox_host         = "192.168.31.42"
     proxmox_node         = "local"
-    datastore_id         = "HD_2TB"
+    datastore_id         = "local-lvm"
     vm_id                = 240
     node_ip              = "192.168.31.240"
     gateway              = "192.168.31.1"
@@ -45,7 +45,7 @@ run "container_has_static_ip_and_correct_sizing" {
     proxmox_api_token    = "test-token"
     proxmox_host         = "192.168.31.42"
     proxmox_node         = "local"
-    datastore_id         = "HD_2TB"
+    datastore_id         = "local-lvm"
     vm_id                = 240
     node_ip              = "192.168.31.240"
     gateway              = "192.168.31.1"
@@ -77,7 +77,7 @@ run "container_has_static_ip_and_correct_sizing" {
   }
 
   assert {
-    condition     = null_resource.container.triggers.template_file_id == "local:vztmpl/debian-12-standard_12.7-1_amd64.tar.zst"
+    condition     = null_resource.container.triggers.template_file_id == "local:vztmpl/debian-12-standard_12.12-1_amd64.tar.zst"
     error_message = "container must be created from the downloaded debian template"
   }
 
