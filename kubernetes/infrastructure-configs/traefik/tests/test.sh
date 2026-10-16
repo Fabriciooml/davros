@@ -10,7 +10,7 @@ cert=$(echo "$built" | yq e 'select(.kind == "Certificate" and .metadata.name ==
 [ -n "$cert" ] || { echo "FAIL: no local-wildcard Certificate found"; exit 1; }
 [ "$(echo "$cert" | yq e '.metadata.namespace' -)" = "traefik" ] || { echo "FAIL: certificate must live in the traefik namespace so the TLSStore can reference its secret"; exit 1; }
 [ "$(echo "$cert" | yq e '.spec.secretName' -)" = "local-wildcard-tls" ] || { echo "FAIL: certificate must target the local-wildcard-tls secret"; exit 1; }
-[ "$(echo "$cert" | yq e '.spec.issuerRef.name' -)" = "letsencrypt-staging" ] || { echo "FAIL: must start on the staging issuer, not production, until verified working"; exit 1; }
+[ "$(echo "$cert" | yq e '.spec.issuerRef.name' -)" = "letsencrypt-production" ] || { echo "FAIL: local-wildcard must use the production issuer for a browser-trusted cert"; exit 1; }
 dns_names=$(echo "$cert" | yq e '.spec.dnsNames | join(",")' -)
 case ",$dns_names," in
   *,"*.local.fabriciooml.dev",*) ;;
@@ -39,7 +39,7 @@ public_cert=$(echo "$built" | yq e 'select(.kind == "Certificate" and .metadata.
 [ -n "$public_cert" ] || { echo "FAIL: no public-wildcard Certificate found"; exit 1; }
 [ "$(echo "$public_cert" | yq e '.metadata.namespace' -)" = "traefik" ] || { echo "FAIL: public certificate must live in the traefik namespace"; exit 1; }
 [ "$(echo "$public_cert" | yq e '.spec.secretName' -)" = "public-wildcard-tls" ] || { echo "FAIL: public certificate must target the public-wildcard-tls secret"; exit 1; }
-[ "$(echo "$public_cert" | yq e '.spec.issuerRef.name' -)" = "letsencrypt-staging" ] || { echo "FAIL: public certificate must also start on the staging issuer"; exit 1; }
+[ "$(echo "$public_cert" | yq e '.spec.issuerRef.name' -)" = "letsencrypt-production" ] || { echo "FAIL: public-wildcard must also use the production issuer"; exit 1; }
 public_dns_names=$(echo "$public_cert" | yq e '.spec.dnsNames | join(",")' -)
 case ",$public_dns_names," in
   *,"*.fabriciooml.dev",*) ;;

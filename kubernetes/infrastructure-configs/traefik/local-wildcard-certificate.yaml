@@ -6,7 +6,7 @@ metadata:
 spec:
   secretName: local-wildcard-tls
   issuerRef:
-    name: letsencrypt-staging
+    name: letsencrypt-production
     kind: ClusterIssuer
   dnsNames:
     - local.fabriciooml.dev
