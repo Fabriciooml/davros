@@ -41,7 +41,7 @@ resource "null_resource" "k3s_install" {
   depends_on = [null_resource.container]
 
   triggers = {
-    vm_id = var.vm_id
+    vm_id        = var.vm_id
     container_id = null_resource.container.id
   }
 
@@ -55,6 +55,17 @@ resource "null_resource" "k3s_install" {
 
   provisioner "local-exec" {
     command = "ssh root@${var.proxmox_host} 'pct exec ${var.vm_id} -- systemd-tmpfiles --create /etc/tmpfiles.d/kmsg.conf'"
+  }
+
+  provisioner "local-exec" {
+    # This host's IPv6 route to the internet is broken (DNS returns AAAA
+    # records fine, but connections over them just fail), while containerd
+    # doesn't fall back to IPv4 cleanly when that happens -- every image
+    # pull intermittently fails with a misleading "lookup <registry>: Try
+    # again" error. Disabling IPv6 in the container's own net namespace
+    # (zero blast radius -- LXC containers each have their own) forces
+    # every pull onto the IPv4 path that actually works.
+    command = "ssh root@${var.proxmox_host} 'pct exec ${var.vm_id} -- sh -c \"sysctl -w net.ipv6.conf.all.disable_ipv6=1; sysctl -w net.ipv6.conf.default.disable_ipv6=1; printf \\\"net.ipv6.conf.all.disable_ipv6 = 1\\nnet.ipv6.conf.default.disable_ipv6 = 1\\n\\\" > /etc/sysctl.d/99-disable-ipv6.conf\"'"
   }
 
   provisioner "local-exec" {
