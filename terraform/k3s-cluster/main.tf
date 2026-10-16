@@ -23,17 +23,28 @@ resource "null_resource" "container" {
     gateway          = var.gateway
     datastore_id     = var.datastore_id
     disk_gb          = tostring(var.disk_gb)
-    cpu_cores        = tostring(var.cpu_cores)
-    memory_mb        = tostring(var.memory_mb)
   }
 
   provisioner "local-exec" {
-    command = "ssh root@${self.triggers.proxmox_host} 'pct create ${self.triggers.vm_id} ${self.triggers.template_file_id} --hostname ${self.triggers.hostname} --cores ${self.triggers.cpu_cores} --memory ${self.triggers.memory_mb} --rootfs ${self.triggers.datastore_id}:${self.triggers.disk_gb} --net0 name=eth0,bridge=vmbr0,ip=${self.triggers.node_ip}/24,gw=${self.triggers.gateway} --nameserver 192.168.31.152 --searchdomain fabriciooml.dev --unprivileged 0 --features nesting=1,mount=nfs && echo \"lxc.apparmor.profile: unconfined\" >> /etc/pve/lxc/${self.triggers.vm_id}.conf && echo \"lxc.mount.auto: proc:rw sys:rw\" >> /etc/pve/lxc/${self.triggers.vm_id}.conf && pct start ${self.triggers.vm_id}'"
+    command = "ssh root@${self.triggers.proxmox_host} 'pct create ${self.triggers.vm_id} ${self.triggers.template_file_id} --hostname ${self.triggers.hostname} --cores ${var.cpu_cores} --memory ${var.memory_mb} --rootfs ${self.triggers.datastore_id}:${self.triggers.disk_gb} --net0 name=eth0,bridge=vmbr0,ip=${self.triggers.node_ip}/24,gw=${self.triggers.gateway} --nameserver 192.168.31.152 --searchdomain fabriciooml.dev --unprivileged 0 --features nesting=1,mount=nfs && echo \"lxc.apparmor.profile: unconfined\" >> /etc/pve/lxc/${self.triggers.vm_id}.conf && echo \"lxc.mount.auto: proc:rw sys:rw\" >> /etc/pve/lxc/${self.triggers.vm_id}.conf && pct start ${self.triggers.vm_id}'"
   }
 
   provisioner "local-exec" {
     when    = destroy
     command = "ssh root@${self.triggers.proxmox_host} 'pct stop ${self.triggers.vm_id} || true; pct destroy ${self.triggers.vm_id}'"
+  }
+}
+
+resource "null_resource" "resize" {
+  depends_on = [null_resource.container]
+
+  triggers = {
+    cpu_cores = tostring(var.cpu_cores)
+    memory_mb = tostring(var.memory_mb)
+  }
+
+  provisioner "local-exec" {
+    command = "ssh root@${var.proxmox_host} 'pct set ${var.vm_id} --cores ${var.cpu_cores} --memory ${var.memory_mb}'"
   }
 }
 
@@ -58,13 +69,6 @@ resource "null_resource" "k3s_install" {
   }
 
   provisioner "local-exec" {
-    # This host's IPv6 route to the internet is broken (DNS returns AAAA
-    # records fine, but connections over them just fail), while containerd
-    # doesn't fall back to IPv4 cleanly when that happens -- every image
-    # pull intermittently fails with a misleading "lookup <registry>: Try
-    # again" error. Disabling IPv6 in the container's own net namespace
-    # (zero blast radius -- LXC containers each have their own) forces
-    # every pull onto the IPv4 path that actually works.
     command = "ssh root@${var.proxmox_host} 'pct exec ${var.vm_id} -- sh -c \"sysctl -w net.ipv6.conf.all.disable_ipv6=1; sysctl -w net.ipv6.conf.default.disable_ipv6=1; printf \\\"net.ipv6.conf.all.disable_ipv6 = 1\\nnet.ipv6.conf.default.disable_ipv6 = 1\\n\\\" > /etc/sysctl.d/99-disable-ipv6.conf\"'"
   }
 

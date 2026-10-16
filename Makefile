@@ -1,6 +1,9 @@
 SHELL := /bin/bash
 .SHELLFLAGS := -eu -o pipefail -c
 
+-include .env
+export
+
 TF_ROOTS := terraform/k3s-cluster terraform/cloudflare
 AGE_KEY_FILE ?= $(HOME)/.config/sops/age/keys.txt
 

@@ -18,6 +18,9 @@ kubeconfig
 *.agekey
 age-keys.txt
 
+# Local env vars with real credentials (e.g. GITHUB_TOKEN)
+.env
+
 # OS/editor noise
 .DS_Store
 *.swp

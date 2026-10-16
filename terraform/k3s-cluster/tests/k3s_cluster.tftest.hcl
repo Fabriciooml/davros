@@ -22,13 +22,13 @@ run "variables_have_expected_defaults" {
   }
 
   assert {
-    condition     = var.cpu_cores == 2
-    error_message = "cpu_cores must default to 2"
+    condition     = var.cpu_cores == 3
+    error_message = "cpu_cores must default to 3"
   }
 
   assert {
-    condition     = var.memory_mb == 4096
-    error_message = "memory_mb must default to 4096"
+    condition     = var.memory_mb == 6144
+    error_message = "memory_mb must default to 6144"
   }
 
   assert {
@@ -82,13 +82,13 @@ run "container_has_static_ip_and_correct_sizing" {
   }
 
   assert {
-    condition     = null_resource.container.triggers.cpu_cores == "2"
-    error_message = "container cpu cores must match cpu_cores variable default"
+    condition     = null_resource.resize.triggers.cpu_cores == "3"
+    error_message = "resize must match cpu_cores variable default"
   }
 
   assert {
-    condition     = null_resource.container.triggers.memory_mb == "4096"
-    error_message = "container memory must match memory_mb variable default"
+    condition     = null_resource.resize.triggers.memory_mb == "6144"
+    error_message = "resize must match memory_mb variable default"
   }
 
   assert {
