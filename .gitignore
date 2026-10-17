@@ -24,3 +24,6 @@ age-keys.txt
 # OS/editor noise
 .DS_Store
 *.swp
+
+# docs
+docs/superpowers/

@@ -1,5 +1,6 @@
 locals {
-  hostname = "k3s-node"
+  hostname    = "k3s-node"
+  k3s_version = "v1.36.5+k3s1"
 }
 
 resource "proxmox_virtual_environment_download_file" "debian_template" {
@@ -8,6 +9,12 @@ resource "proxmox_virtual_environment_download_file" "debian_template" {
   content_type = "vztmpl"
   file_name    = "debian-12-standard_12.12-1_amd64.tar.zst"
   url          = "http://download.proxmox.com/images/system/debian-12-standard_12.12-1_amd64.tar.zst"
+  checksum           = "50c85eaaece677a3ebe01cc909b83872e9da2a22c29ae652838afce71e83222fdf40f6accecd7d52b180e912fc1f85ecdf7b3fc4d3027da4d865e509a9e76597"
+  checksum_algorithm = "sha512"
+
+  lifecycle {
+    ignore_changes = [checksum, checksum_algorithm]
+  }
 }
 
 resource "null_resource" "container" {
@@ -73,7 +80,7 @@ resource "null_resource" "k3s_install" {
   }
 
   provisioner "local-exec" {
-    command = "ssh root@${var.proxmox_host} 'pct exec ${var.vm_id} -- bash -c \"set -o pipefail; apt-get update && apt-get install -y curl && curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC=\\\"server --snapshotter=native --disable=traefik --disable=local-storage --node-ip=${var.node_ip}\\\" sh -\"'"
+    command = "ssh root@${var.proxmox_host} 'pct exec ${var.vm_id} -- bash -c \"set -o pipefail; apt-get update && apt-get install -y curl && curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=${local.k3s_version} INSTALL_K3S_EXEC=\\\"server --snapshotter=native --disable=traefik --disable=local-storage --node-ip=${var.node_ip} --kubelet-arg=runtime-request-timeout=5m\\\" sh -\"'"
   }
 }
 
@@ -90,7 +97,7 @@ data "external" "kubeconfig" {
 }
 
 resource "local_file" "kubeconfig" {
-  content         = base64decode(data.external.kubeconfig.result.kubeconfig_b64)
+  content         = sensitive(base64decode(data.external.kubeconfig.result.kubeconfig_b64))
   filename        = "${path.module}/kubeconfig"
   file_permission = "0600"
 }

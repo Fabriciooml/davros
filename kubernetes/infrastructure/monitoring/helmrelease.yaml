@@ -8,6 +8,7 @@ spec:
   chart:
     spec:
       chart: kube-prometheus-stack
+      version: 92.10.1
       sourceRef:
         kind: HelmRepository
         name: prometheus-community
@@ -32,6 +33,22 @@ spec:
           memory: 192Mi
         limits:
           memory: 256Mi
+      livenessProbe:
+        httpGet:
+          path: /api/health
+          port: 3000
+        initialDelaySeconds: 180
+        periodSeconds: 10
+        timeoutSeconds: 30
+        failureThreshold: 30
+      readinessProbe:
+        httpGet:
+          path: /api/health
+          port: 3000
+        initialDelaySeconds: 60
+        periodSeconds: 10
+        timeoutSeconds: 30
+        failureThreshold: 30
 
     kube-state-metrics:
       resources:
