@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: portainer
+  namespace: legacy-routes
+spec:
+  ports:
+    - name: https
+      port: 9443
+      targetPort: 9443
+---
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: portainer
+  namespace: legacy-routes
+  labels:
+    kubernetes.io/service-name: portainer
+addressType: IPv4
+ports:
+  - name: https
+    port: 9443
+    protocol: TCP
+endpoints:
+  - addresses:
+      - 192.168.31.226
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: portainer
+  namespace: legacy-routes
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`docker.local.fabriciooml.dev`)
+      services:
+        - name: portainer
+          port: 9443
+          scheme: https
+          serversTransport: insecure-skip-verify
+  tls: {}

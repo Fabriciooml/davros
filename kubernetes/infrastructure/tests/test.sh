@@ -11,4 +11,7 @@ for chart in cert-manager csi-driver-nfs; do
   [ -n "$found" ] || { echo "FAIL: $chart HelmRelease missing from the aggregated infrastructure build"; exit 1; }
 done
 
+class=$(echo "$built" | yq e 'select(.kind == "StorageClass" and .metadata.name == "local-path")' -)
+[ -n "$class" ] || { echo "FAIL: local-path StorageClass missing from the aggregated infrastructure build"; exit 1; }
+
 echo "PASS"

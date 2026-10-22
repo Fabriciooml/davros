@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: qbittorrent
+  namespace: legacy-routes
+spec:
+  ports:
+    - name: http
+      port: 4242
+      targetPort: 4242
+---
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: qbittorrent
+  namespace: legacy-routes
+  labels:
+    kubernetes.io/service-name: qbittorrent
+addressType: IPv4
+ports:
+  - name: http
+    port: 4242
+    protocol: TCP
+endpoints:
+  - addresses:
+      - 192.168.31.226
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: qbittorrent
+  namespace: legacy-routes
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`torrent.local.fabriciooml.dev`)
+      services:
+        - name: qbittorrent
+          port: 4242
+  tls: {}

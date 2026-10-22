@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - namespace.yaml
+  - serverstransport.yaml
+  - bazarr.yaml
+  - haos.yaml
+  - jellyfin.yaml
+  - overseerr.yaml
+  - pihole.yaml
+  - plex.yaml
+  - portainer.yaml
+  - prowlarr.yaml
+  - proxmox.yaml
+  - qbittorrent.yaml
+  - radarr.yaml
+  - sonarr.yaml
+  - vaultwarden.yaml

@@ -23,7 +23,7 @@ test-terraform:
 
 .PHONY: test-scripts
 test-scripts:
-	@for script in $$(find terraform -path '*/tests/*.test.sh' | sort); do \
+	@for script in $$(find terraform scripts -path '*/tests/*.test.sh' | sort); do \
 		echo "== script test: $$script =="; \
 		bash "$$script"; \
 	done

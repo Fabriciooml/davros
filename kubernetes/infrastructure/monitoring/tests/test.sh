@@ -17,9 +17,9 @@ helmrelease=$(echo "$built" | yq e 'select(.kind == "HelmRelease")' -)
 [ "$(echo "$helmrelease" | yq e '.spec.values.alertmanager.enabled' -)" = "false" ] || { echo "FAIL: alertmanager must be disabled -- no notification channels configured yet"; exit 1; }
 
 [ "$(echo "$helmrelease" | yq e '.spec.values.grafana.admin.existingSecret' -)" = "grafana-admin-credentials" ] || { echo "FAIL: grafana must read its admin password from the grafana-admin-credentials secret, not a plaintext value"; exit 1; }
-[ "$(echo "$helmrelease" | yq e '.spec.values.grafana.persistence.storageClassName' -)" = "nfs-appdata" ] || { echo "FAIL: grafana persistence must use the nfs-appdata storage class"; exit 1; }
+[ "$(echo "$helmrelease" | yq e '.spec.values.grafana.persistence.storageClassName' -)" = "local-path" ] || { echo "FAIL: grafana persistence must use the local-path storage class"; exit 1; }
 
-[ "$(echo "$helmrelease" | yq e '.spec.values.prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.storageClassName' -)" = "nfs-appdata" ] || { echo "FAIL: prometheus storage must use the nfs-appdata storage class"; exit 1; }
+[ "$(echo "$helmrelease" | yq e '.spec.values.prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.storageClassName' -)" = "local-path" ] || { echo "FAIL: prometheus storage must use the local-path storage class"; exit 1; }
 [ "$(echo "$helmrelease" | yq e '.spec.values.prometheus.prometheusSpec.retention' -)" = "15d" ] || { echo "FAIL: prometheus retention must be 15d"; exit 1; }
 
 echo "PASS"
