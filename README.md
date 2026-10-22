@@ -18,7 +18,6 @@ safe in a public repo.
 - **cert-manager** + Let's Encrypt — issues two wildcard certs:
   `*.local.mydomain` (LAN-only) and `*.mydomain` (public, via Cloudflare Tunnel).
 - **Traefik** — ingress controller.
-- **csi-driver-nfs** — dynamic PV provisioning against NFS exports.
 
 ## Repo layout
 
@@ -31,7 +30,7 @@ terraform/
 
 kubernetes/
   flux-system/          # flux's own bootstrap manifests (gitops-managed after first bootstrap)
-  infrastructure/        # HelmRepositories + HelmReleases (cert-manager, traefik, nfs-csi, monitoring)
+  infrastructure/        # HelmRepositories + HelmReleases (cert-manager, traefik, local-path-provisioner, monitoring)
   infrastructure-configs/ # chart-owned CRs that must come after the chart installs (ClusterIssuers, Certificates, StorageClasses, IngressRoutes, the sops-encrypted secrets)
   apps/                  # workload apps (empty so far)
 
