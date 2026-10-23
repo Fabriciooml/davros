@@ -1,0 +1,15 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: pgadmin
+  namespace: postgres
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`pgadmin.local.fabriciooml.dev`)
+      kind: Rule
+      services:
+        - name: pgadmin
+          port: 80
+  tls: {}
