@@ -9,7 +9,7 @@ echo "$built" | kubeconform -strict -ignore-missing-schemas -skip Secret -summar
 k=$(echo "$built" | yq e 'select(.kind == "Deployment" and .metadata.name == "kafka")' -)
 [ -n "$k" ] || { echo "FAIL: no Deployment kafka"; exit 1; }
 [ "$(echo "$k" | yq e '.spec.strategy.type' -)" = "Recreate" ] || { echo "FAIL: RWO volume needs Recreate"; exit 1; }
-[ "$(echo "$k" | yq e '.spec.replicas' -)" = "0" ] || { echo "FAIL: kafka must stay at 0 replicas"; exit 1; }
+[ "$(echo "$k" | yq e '.spec.replicas' -)" = "1" ] || { echo "FAIL: kafka must be committed at replicas 1"; exit 1; }
 [ "$(echo "$k" | yq e '.spec.template.spec.enableServiceLinks' -)" = "false" ] || { echo "FAIL: kafka must disable service-link env vars"; exit 1; }
 case "$(echo "$k" | yq e '.spec.template.spec.containers[0].image' -)" in
   apache/kafka:3.7.0@sha256:41c20d65b0a2180b9deca056d47540771752e69fe9225d5748dd65a25a9675d7) ;;
@@ -42,7 +42,7 @@ ui=$(echo "$built" | yq e 'select(.kind == "Deployment" and .metadata.name == "k
 [ "$(echo "$ui" | yq e '.spec.template.spec.containers[0].env[] | select(.name == "KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS") | .value' -)" = "kafka.kafka.svc.cluster.local:9092" ] || { echo "FAIL: kafka-ui bootstrap"; exit 1; }
 [ "$(echo "$ui" | yq e '.spec.template.spec.containers[0].env[] | select(.name == "KAFKA_CLUSTERS_0_NAME") | .value' -)" = "local" ] || { echo "FAIL: cluster name stays local"; exit 1; }
 [ "$(echo "$ui" | yq e '.spec.progressDeadlineSeconds' -)" = "1200" ] || { echo "FAIL: kafka-ui progressDeadlineSeconds must be 1200"; exit 1; }
-[ "$(echo "$ui" | yq e '.spec.replicas' -)" = "0" ] || { echo "FAIL: kafka-ui must stay at 0 replicas"; exit 1; }
+[ "$(echo "$ui" | yq e '.spec.replicas' -)" = "1" ] || { echo "FAIL: kafka-ui must be committed at replicas 1"; exit 1; }
 [ "$(echo "$ui" | yq e '.spec.template.spec.enableServiceLinks' -)" = "false" ] || { echo "FAIL: kafka-ui must disable service-link env vars"; exit 1; }
 echo "$built" | yq e 'select(.kind == "IngressRoute") | .spec.routes[0].match' - | grep -q 'kafka-ui.local.fabriciooml.dev' || { echo "FAIL: kafka-ui host missing"; exit 1; }
 

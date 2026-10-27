@@ -17,7 +17,7 @@ metadata:
   name: kafka
   namespace: kafka
 spec:
-  replicas: 0
+  replicas: 1
   progressDeadlineSeconds: 1800
   strategy:
     type: Recreate
