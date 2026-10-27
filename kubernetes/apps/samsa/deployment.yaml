@@ -16,7 +16,7 @@ spec:
       labels:
         app: samsa
       annotations:
-        fabriciooml.dev/image-digest: sha256:1ee7d313f133e816c59be53beb3be3491352135fde8450de341f48e2ca8f374a # {"$imagepolicy": "flux-system:samsa:digest"}
+        fabriciooml.dev/image-digest: sha256:2ba1c32539de0304779d56bf4b4d4876eb333baca3e85f8b7fcdd3b9585eb659 # {"$imagepolicy": "flux-system:samsa:digest"}
     spec:
       enableServiceLinks: false
       containers:
