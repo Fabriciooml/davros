@@ -1,0 +1,15 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: samsa
+  namespace: samsa
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`samsa.local.fabriciooml.dev`)
+      kind: Rule
+      services:
+        - name: samsa
+          port: 80
+  tls: {}

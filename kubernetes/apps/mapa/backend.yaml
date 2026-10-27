@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: mapa
+spec:
+  replicas: 0
+  progressDeadlineSeconds: 1200
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+      annotations:
+        fabriciooml.dev/image-digest: sha256:0000000000000000000000000000000000000000000000000000000000000000 # {"$imagepolicy": "flux-system:mapa-backend:digest"}
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: backend
+          image: ghcr.io/fabriciooml/nosso-mapa-backend:main
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+          env:
+            - name: DB_PATH
+              value: /app/data/nosso_mapa.db
+            - name: GOOGLE_PLACES_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: mapa-secrets
+                  key: GOOGLE_PLACES_API_KEY
+          readinessProbe:
+            httpGet:
+              path: /api/categories
+              port: 8000
+            periodSeconds: 10
+            timeoutSeconds: 10
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /api/categories
+              port: 8000
+            initialDelaySeconds: 300
+            periodSeconds: 20
+            timeoutSeconds: 10
+            failureThreshold: 15
+          resources:
+            requests:
+              cpu: 25m
+              memory: 96Mi
+            limits:
+              memory: 256Mi
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: mapa-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: mapa
+spec:
+  selector:
+    app: backend
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000

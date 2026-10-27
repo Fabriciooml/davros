@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: muad-dib
+  namespace: muad-dib
+spec:
+  replicas: 0
+  progressDeadlineSeconds: 1200
+  selector:
+    matchLabels:
+      app: muad-dib
+  template:
+    metadata:
+      labels:
+        app: muad-dib
+      annotations:
+        fabriciooml.dev/image-digest: sha256:bd0f66a30dd0bcab2c0ab7d869d59d989f42732955f81c0169a2f46bd48ad8e9 # {"$imagepolicy": "flux-system:muad-dib:digest"}
+    spec:
+      enableServiceLinks: false
+      initContainers:
+        - name: migrate
+          image: ghcr.io/fabriciooml/muad_dib:main
+          imagePullPolicy: Always
+          command: ["alembic", "upgrade", "head"]
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: muad-dib-secrets
+                  key: DATABASE_URL
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+      containers:
+        - name: muad-dib
+          image: ghcr.io/fabriciooml/muad_dib:main
+          imagePullPolicy: Always
+          command:
+            - uvicorn
+            - cinema_tracker.app:create_application
+            - --factory
+            - --host
+            - 0.0.0.0
+            - --port
+            - "8000"
+            - --workers
+            - "1"
+          ports:
+            - containerPort: 8000
+          env:
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: kafka.kafka.svc.cluster.local:9092
+            - name: UV_LINK_MODE
+              value: copy
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: muad-dib-secrets
+                  key: DATABASE_URL
+            - name: ADMIN_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: muad-dib-secrets
+                  key: ADMIN_API_KEY
+          readinessProbe:
+            httpGet:
+              path: /health/live
+              port: 8000
+            periodSeconds: 15
+            timeoutSeconds: 10
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 8000
+            initialDelaySeconds: 300
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 15
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 384Mi

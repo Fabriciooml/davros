@@ -1,0 +1,15 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: muad-dib
+  namespace: muad-dib
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`muad-dib.local.fabriciooml.dev`)
+      kind: Rule
+      services:
+        - name: muad-dib
+          port: 80
+  tls: {}

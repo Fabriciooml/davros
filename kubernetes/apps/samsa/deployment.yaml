@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: samsa
+  namespace: samsa
+spec:
+  replicas: 0
+  progressDeadlineSeconds: 1200
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: samsa
+  template:
+    metadata:
+      labels:
+        app: samsa
+      annotations:
+        fabriciooml.dev/image-digest: sha256:1ee7d313f133e816c59be53beb3be3491352135fde8450de341f48e2ca8f374a # {"$imagepolicy": "flux-system:samsa:digest"}
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: samsa
+          image: ghcr.io/fabriciooml/samsa:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+          env:
+            - name: KAFKA_BOOTSTRAP
+              value: kafka.kafka.svc.cluster.local:9092
+            - name: AUTO_GENERATE_KEYS
+              value: "true"
+            - name: SECURE_COOKIES
+              value: "false"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: samsa-secrets
+                  key: DATABASE_URL
+            - name: ADMIN_BOOTSTRAP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: samsa-secrets
+                  key: ADMIN_BOOTSTRAP_PASSWORD
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8000
+            periodSeconds: 15
+            timeoutSeconds: 10
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 8000
+            initialDelaySeconds: 300
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 15
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 384Mi
+          volumeMounts:
+            - name: keys
+              mountPath: /app/keys
+      volumes:
+        - name: keys
+          persistentVolumeClaim:
+            claimName: samsa-keys

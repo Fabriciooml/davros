@@ -1,0 +1,49 @@
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: mapa-backend
+  namespace: flux-system
+spec:
+  image: ghcr.io/fabriciooml/nosso-mapa-backend
+  interval: 5m
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: mapa-backend
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: mapa-backend
+  filterTags:
+    pattern: '^main$'
+  policy:
+    alphabetical:
+      order: asc
+  digestReflectionPolicy: Always
+  interval: 5m
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: mapa-frontend
+  namespace: flux-system
+spec:
+  image: ghcr.io/fabriciooml/nosso-mapa-frontend
+  interval: 5m
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: mapa-frontend
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: mapa-frontend
+  filterTags:
+    pattern: '^main$'
+  policy:
+    alphabetical:
+      order: asc
+  digestReflectionPolicy: Always
+  interval: 5m

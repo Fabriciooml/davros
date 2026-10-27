@@ -1,0 +1,24 @@
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: muad-dib
+  namespace: flux-system
+spec:
+  image: ghcr.io/fabriciooml/muad_dib
+  interval: 5m
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: muad-dib
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: muad-dib
+  filterTags:
+    pattern: '^main$'
+  policy:
+    alphabetical:
+      order: asc
+  digestReflectionPolicy: Always
+  interval: 5m
