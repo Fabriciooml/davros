@@ -13,7 +13,7 @@ pg=$(echo "$built" | yq e 'select(.kind == "Deployment" and .metadata.name == "p
 for probe in readinessProbe livenessProbe; do
   [ "$(echo "$pg" | yq e ".spec.template.spec.containers[0].$probe.exec.command | join(\" \")" -)" = "pg_isready -h 127.0.0.1 -U root -d postgres" ] || { echo "FAIL: postgres $probe must use pg_isready over TCP (-h 127.0.0.1)"; exit 1; }
 done
-[ "$(echo "$pg" | yq e '.spec.replicas' -)" = "0" ] || { echo "FAIL: postgres must be committed at replicas 0"; exit 1; }
+[ "$(echo "$pg" | yq e '.spec.replicas' -)" = "1" ] || { echo "FAIL: postgres must be committed at replicas 1"; exit 1; }
 [ "$(echo "$pg" | yq e '.spec.template.spec.enableServiceLinks' -)" = "false" ] || { echo "FAIL: postgres must disable service-link env vars"; exit 1; }
 case "$(echo "$pg" | yq e '.spec.template.spec.containers[0].image' -)" in
   postgres:16-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea) ;;
@@ -26,7 +26,7 @@ admin=$(echo "$built" | yq e 'select(.kind == "Deployment" and .metadata.name ==
 [ -n "$admin" ] || { echo "FAIL: no Deployment pgadmin"; exit 1; }
 [ "$(echo "$admin" | yq e '.spec.template.spec.securityContext.runAsUser' -)" = "5050" ] || { echo "FAIL: pgadmin runs as 5050"; exit 1; }
 [ "$(echo "$admin" | yq e '.spec.progressDeadlineSeconds' -)" = "1200" ] || { echo "FAIL: pgadmin progressDeadlineSeconds must be 1200"; exit 1; }
-[ "$(echo "$admin" | yq e '.spec.replicas' -)" = "0" ] || { echo "FAIL: pgadmin must be committed at replicas 0"; exit 1; }
+[ "$(echo "$admin" | yq e '.spec.replicas' -)" = "1" ] || { echo "FAIL: pgadmin must be committed at replicas 1"; exit 1; }
 [ "$(echo "$admin" | yq e '.spec.template.spec.enableServiceLinks' -)" = "false" ] || { echo "FAIL: pgadmin must disable service-link env vars"; exit 1; }
 [ "$(echo "$admin" | yq e '.spec.strategy.type' -)" = "Recreate" ] || { echo "FAIL: pgadmin RWO volume needs Recreate"; exit 1; }
 case "$(echo "$admin" | yq e '.spec.template.spec.containers[0].image' -)" in

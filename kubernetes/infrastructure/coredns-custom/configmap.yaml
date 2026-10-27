@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns-custom
+  namespace: kube-system
+data:
+  cluster-local-search.server: |
+    cluster.local.fabriciooml.dev:53 {
+        template ANY ANY {
+            rcode NXDOMAIN
+        }
+    }

@@ -17,4 +17,7 @@ class=$(echo "$built" | yq e 'select(.kind == "StorageClass" and .metadata.name 
 nfs=$(echo "$built" | yq e 'select((.kind == "StorageClass" and .provisioner == "nfs.csi.k8s.io") or (.kind == "HelmRelease" and .spec.chart.spec.chart == "csi-driver-nfs")) | .metadata.name' -)
 [ -z "$nfs" ] || { echo "FAIL: NFS must not be used (host and k3s node share a kernel, loopback NFS deadlocks): $nfs"; exit 1; }
 
+dns=$(echo "$built" | yq e 'select(.kind == "ConfigMap" and .metadata.name == "coredns-custom") | .metadata.name' -)
+[ "$dns" = "coredns-custom" ] || { echo "FAIL: coredns-custom missing from the aggregated infrastructure build"; exit 1; }
+
 echo "PASS"
