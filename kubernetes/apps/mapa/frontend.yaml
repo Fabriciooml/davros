@@ -21,6 +21,12 @@ spec:
         - name: frontend
           image: ghcr.io/fabriciooml/nosso-mapa-frontend:main
           imagePullPolicy: Always
+          env:
+            - name: VITE_GOOGLE_MAPS_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: mapa-secrets
+                  key: GOOGLE_PLACES_API_KEY
           ports:
             - containerPort: 80
           readinessProbe:

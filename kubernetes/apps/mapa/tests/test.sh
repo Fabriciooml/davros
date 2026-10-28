@@ -28,6 +28,9 @@ be=$(echo "$built" | yq e 'select(.kind == "Deployment" and .metadata.name == "b
 [ "$(echo "$be" | yq e '.spec.template.spec.containers[0].env[] | select(.name == "GOOGLE_PLACES_API_KEY") | .valueFrom.secretKeyRef.name' -)" = "mapa-secrets" ] || { echo "FAIL: places key must come from the secret"; exit 1; }
 [ "$(echo "$be" | yq e '.spec.template.spec.containers[0].env[] | select(.name == "GOOGLE_PLACES_API_KEY") | .valueFrom.secretKeyRef.key' -)" = "GOOGLE_PLACES_API_KEY" ] || { echo "FAIL: places key must reference GOOGLE_PLACES_API_KEY in the secret"; exit 1; }
 
+fe=$(echo "$built" | yq e 'select(.kind == "Deployment" and .metadata.name == "frontend")' -)
+[ "$(echo "$fe" | yq e '.spec.template.spec.containers[0].env[] | select(.name == "VITE_GOOGLE_MAPS_API_KEY") | .valueFrom.secretKeyRef.key' -)" = "GOOGLE_PLACES_API_KEY" ] || { echo "FAIL: frontend maps key must come from the secret at runtime"; exit 1; }
+
 svc=$(echo "$built" | yq e 'select(.kind == "Service" and .metadata.name == "backend")' -)
 [ "$(echo "$svc" | yq e '.spec.ports[0].port' -)" = "8000" ] || { echo "FAIL: nginx proxies to backend:8000"; exit 1; }
 
