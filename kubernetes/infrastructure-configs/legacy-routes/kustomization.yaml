@@ -7,7 +7,6 @@ resources:
   - couchdb.yaml
   - haos.yaml
   - jellyfin.yaml
-  - overseerr.yaml
   - pihole.yaml
   - plex.yaml
   - portainer.yaml

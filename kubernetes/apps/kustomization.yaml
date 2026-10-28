@@ -6,5 +6,6 @@ resources:
   - mapa
   - mealie
   - muad-dib
+  - overseerr
   - postgres
   - samsa
