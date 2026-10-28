@@ -16,7 +16,7 @@ spec:
       labels:
         app: comida
       annotations:
-        fabriciooml.dev/image-digest: sha256:0000000000000000000000000000000000000000000000000000000000000000 # {"$imagepolicy": "flux-system:comida:digest"}
+        fabriciooml.dev/image-digest: sha256:249661cea04f712d9a1208baa3a0aaaf083f4c7eb4614cefb3dfccd2eabf9f83 # {"$imagepolicy": "flux-system:comida:digest"}
     spec:
       enableServiceLinks: false
       containers:

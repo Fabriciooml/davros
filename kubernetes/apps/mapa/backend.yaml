@@ -16,7 +16,7 @@ spec:
       labels:
         app: backend
       annotations:
-        fabriciooml.dev/image-digest: sha256:0000000000000000000000000000000000000000000000000000000000000000 # {"$imagepolicy": "flux-system:mapa-backend:digest"}
+        fabriciooml.dev/image-digest: sha256:555d81f9ed40913208c7d27baab22a335c6fd0ede37f94455f9dba13e02afc5d # {"$imagepolicy": "flux-system:mapa-backend:digest"}
     spec:
       enableServiceLinks: false
       containers:
