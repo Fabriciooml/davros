@@ -10,3 +10,16 @@ data:
             rcode NXDOMAIN
         }
     }
+  fabriciooml-search.server: |
+    local.fabriciooml.dev:53 {
+        forward . /etc/resolv.conf
+        cache 30
+    }
+    fabriciooml.dev:53 {
+        template ANY ANY {
+            match "^[^.]+[.].+[.]fabriciooml[.]dev[.]$"
+            rcode NXDOMAIN
+        }
+        forward . /etc/resolv.conf
+        cache 30
+    }

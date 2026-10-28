@@ -2,8 +2,6 @@
 set -euo pipefail
 
 storage_id="hd2tb-backup"
-job_id="nightly-guests"
-job_schedule="02:00"
 script_src="$(cd "$(dirname "$0")" && pwd)/k8s-data-backup.sh"
 script_dst="/usr/local/sbin/k8s-data-backup.sh"
 cron_file="/etc/cron.d/k8s-data-backup"
@@ -31,18 +29,6 @@ for tool in rsync flock; do
   fi
 done
 
-jobs=$(pvesh get /cluster/backup --output-format json)
-if ! grep -Eq "\"id\" *: *\"${job_id}\"" <<<"$jobs"; then
-  pvesh create /cluster/backup \
-    --id "$job_id" \
-    --schedule "$job_schedule" \
-    --storage "$storage_id" \
-    --mode snapshot \
-    --compress zstd \
-    --all 1 \
-    --enabled 1
-fi
-
 install -m 0755 "$script_src" "$script_dst"
 
 if [ "$(cat "$cron_file" 2>/dev/null || true)" != "$cron_line" ]; then
@@ -50,5 +36,4 @@ if [ "$(cat "$cron_file" 2>/dev/null || true)" != "$cron_line" ]; then
   chmod 0644 "$cron_file"
 fi
 
-pvesh get /cluster/backup --output-format json-pretty
 cat "$cron_file"
