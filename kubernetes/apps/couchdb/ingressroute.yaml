@@ -1,0 +1,15 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: couchdb
+  namespace: couchdb
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`obsidian.local.fabriciooml.dev`)
+      kind: Rule
+      services:
+        - name: couchdb
+          port: 5984
+  tls: {}

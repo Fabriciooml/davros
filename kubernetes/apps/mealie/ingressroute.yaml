@@ -1,0 +1,15 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: mealie
+  namespace: mealie
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`mealie.local.fabriciooml.dev`) || Host(`mealie.fabriciooml.dev`)
+      kind: Rule
+      services:
+        - name: mealie
+          port: 9000
+  tls: {}

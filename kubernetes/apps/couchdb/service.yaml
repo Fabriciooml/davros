@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: couchdb
+  namespace: couchdb
+spec:
+  selector:
+    app: couchdb
+  ports:
+    - name: http
+      port: 5984
+      targetPort: 5984
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: couchdb-lan
+  namespace: couchdb
+spec:
+  type: LoadBalancer
+  selector:
+    app: couchdb
+  ports:
+    - name: http
+      port: 5984
+      targetPort: 5984

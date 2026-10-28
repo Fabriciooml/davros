@@ -4,6 +4,7 @@ resources:
   - comida
   - kafka
   - mapa
+  - mealie
   - muad-dib
   - postgres
   - samsa
