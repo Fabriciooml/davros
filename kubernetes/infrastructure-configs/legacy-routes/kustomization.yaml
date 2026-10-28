@@ -4,6 +4,7 @@ resources:
   - namespace.yaml
   - serverstransport.yaml
   - bazarr.yaml
+  - couchdb.yaml
   - haos.yaml
   - jellyfin.yaml
   - overseerr.yaml

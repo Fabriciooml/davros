@@ -45,6 +45,7 @@ check() {
 
 d=local.fabriciooml.dev
 check overseerr   "requester.$d"  192.168.31.226 5055  http
+check couchdb     "obsidian.$d"    192.168.31.226 5984  http
 check prowlarr    "prowlarr.$d"   192.168.31.226 9696  http
 check qbittorrent "torrent.$d"    192.168.31.226 4242  http
 check radarr      "radarr.$d"     192.168.31.226 7878  http
