@@ -33,7 +33,7 @@ resource "null_resource" "container" {
   }
 
   provisioner "local-exec" {
-    command = "ssh root@${self.triggers.proxmox_host} 'pct create ${self.triggers.vm_id} ${self.triggers.template_file_id} --hostname ${self.triggers.hostname} --cores ${var.cpu_cores} --memory ${var.memory_mb} --rootfs ${self.triggers.datastore_id}:${self.triggers.disk_gb} --net0 name=eth0,bridge=vmbr0,ip=${self.triggers.node_ip}/24,gw=${self.triggers.gateway} --nameserver 192.168.31.152 --searchdomain fabriciooml.dev --unprivileged 0 --features nesting=1 --mp0 /mnt/hd2tb-k8s-appdata/local-pv,mp=/var/lib/local-pv && echo \"lxc.apparmor.profile: unconfined\" >> /etc/pve/lxc/${self.triggers.vm_id}.conf && echo \"lxc.mount.auto: proc:rw sys:rw\" >> /etc/pve/lxc/${self.triggers.vm_id}.conf && pct start ${self.triggers.vm_id}'"
+    command = "ssh root@${self.triggers.proxmox_host} 'pct create ${self.triggers.vm_id} ${self.triggers.template_file_id} --hostname ${self.triggers.hostname} --cores ${var.cpu_cores} --memory ${var.memory_mb} --rootfs ${self.triggers.datastore_id}:${self.triggers.disk_gb} --net0 name=eth0,bridge=vmbr0,ip=${self.triggers.node_ip}/24,gw=${self.triggers.gateway} --nameserver 192.168.31.152 --searchdomain fabriciooml.dev --unprivileged 0 --features nesting=1 --mp0 /mnt/hd2tb-k8s-appdata/local-pv,mp=/var/lib/local-pv --mp1 /mnt/hd2tb-k8s-appdata/containerd,mp=/var/lib/rancher/k3s/agent/containerd && echo \"lxc.apparmor.profile: unconfined\" >> /etc/pve/lxc/${self.triggers.vm_id}.conf && echo \"lxc.mount.auto: proc:rw sys:rw\" >> /etc/pve/lxc/${self.triggers.vm_id}.conf && pct start ${self.triggers.vm_id}'"
   }
 
   provisioner "local-exec" {
@@ -80,7 +80,7 @@ resource "null_resource" "k3s_install" {
   }
 
   provisioner "local-exec" {
-    command = "ssh root@${var.proxmox_host} 'pct exec ${var.vm_id} -- bash -c \"set -o pipefail; apt-get update && apt-get install -y curl && curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=${local.k3s_version} INSTALL_K3S_EXEC=\\\"server --snapshotter=native --disable=traefik --disable=local-storage --node-ip=${var.node_ip} --kubelet-arg=runtime-request-timeout=5m\\\" sh -\"'"
+    command = "ssh root@${var.proxmox_host} 'pct exec ${var.vm_id} -- bash -c \"set -o pipefail; apt-get update && apt-get install -y curl && curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=${local.k3s_version} INSTALL_K3S_EXEC=\\\"server --snapshotter=overlayfs --disable=traefik --disable=local-storage --node-ip=${var.node_ip} --kubelet-arg=runtime-request-timeout=5m\\\" sh -\"'"
   }
 }
 

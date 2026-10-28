@@ -27,8 +27,8 @@ run "variables_have_expected_defaults" {
   }
 
   assert {
-    condition     = var.memory_mb == 6144
-    error_message = "memory_mb must default to 6144"
+    condition     = var.memory_mb == 8192
+    error_message = "memory_mb must default to 8192"
   }
 
   assert {
@@ -87,7 +87,7 @@ run "container_has_static_ip_and_correct_sizing" {
   }
 
   assert {
-    condition     = null_resource.resize.triggers.memory_mb == "6144"
+    condition     = null_resource.resize.triggers.memory_mb == "8192"
     error_message = "resize must match memory_mb variable default"
   }
 
