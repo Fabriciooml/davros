@@ -4,7 +4,7 @@ metadata:
   name: muad-dib
   namespace: muad-dib
 spec:
-  replicas: 0
+  replicas: 1
   progressDeadlineSeconds: 1200
   selector:
     matchLabels:
