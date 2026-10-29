@@ -18,6 +18,7 @@ search=$(echo "$cm" | yq e '.data["fabriciooml-search.server"]' -)
 echo "$search" | grep -q '^local\.fabriciooml\.dev:53 {$' || { echo "FAIL: *.local.fabriciooml.dev must keep resolving through the upstream (pihole wildcard)"; exit 1; }
 echo "$search" | grep -q '^fabriciooml\.dev:53 {$' || { echo "FAIL: server block for fabriciooml.dev:53 missing"; exit 1; }
 echo "$search" | grep -qF 'match "^[^.]+[.].+[.]fabriciooml[.]dev[.]$"' || { echo "FAIL: names with two or more labels under fabriciooml.dev (search-list expansions of external names) must be matched"; exit 1; }
+echo "$search" | grep -q '^        fallthrough$' || { echo "FAIL: names that do not match must fall through to forward, otherwise the apex, public one-label names and _acme-challenge get SERVFAIL (breaks cert-manager DNS-01)"; exit 1; }
 echo "$search" | grep -q 'rcode NXDOMAIN' || { echo "FAIL: matched names must answer NXDOMAIN, not an empty NOERROR (musl resolvers stop at NODATA)"; exit 1; }
 [ "$(echo "$search" | grep -c 'forward \. /etc/resolv.conf')" = "2" ] || { echo "FAIL: both blocks must forward to the node resolvers"; exit 1; }
 

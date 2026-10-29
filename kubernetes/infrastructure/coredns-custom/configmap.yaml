@@ -19,6 +19,7 @@ data:
         template ANY ANY {
             match "^[^.]+[.].+[.]fabriciooml[.]dev[.]$"
             rcode NXDOMAIN
+            fallthrough
         }
         forward . /etc/resolv.conf
         cache 30
