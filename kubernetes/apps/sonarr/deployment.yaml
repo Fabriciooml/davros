@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sonarr
+  namespace: arr
+spec:
+  replicas: 0
+  progressDeadlineSeconds: 1200
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: sonarr
+  template:
+    metadata:
+      labels:
+        app: sonarr
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: sonarr
+          image: ghcr.io/hotio/sonarr:release-4.0.19.2979@sha256:a16f50198a8db06301fb49e0c2d551261e8eb43323d482e919fa8e44ba804534
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: UMASK
+              value: "002"
+            - name: TZ
+              value: America/Sao_Paulo
+          ports:
+            - containerPort: 8989
+          readinessProbe:
+            httpGet:
+              path: /ping
+              port: 8989
+            periodSeconds: 15
+            timeoutSeconds: 10
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: 8989
+            initialDelaySeconds: 300
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 384Mi
+            limits:
+              memory: 1536Mi
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: sonarr-config
+        - name: data
+          hostPath:
+            path: /mnt/pool-data
+            type: Directory

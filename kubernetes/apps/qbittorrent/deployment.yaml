@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qbittorrent
+  namespace: arr
+spec:
+  replicas: 0
+  progressDeadlineSeconds: 1200
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: qbittorrent
+  template:
+    metadata:
+      labels:
+        app: qbittorrent
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: qbittorrent
+          image: ghcr.io/hotio/qbittorrent:release-5.2.3@sha256:fbff489ebe410ad4be3e86294298f40ccefb2cb410ccf2847f7c5819171dfb56
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: UMASK
+              value: "002"
+            - name: TZ
+              value: America/Sao_Paulo
+            - name: WEBUI_PORTS
+              value: 4242/tcp
+          ports:
+            - name: http
+              containerPort: 4242
+            - name: peer-tcp
+              containerPort: 6881
+              protocol: TCP
+            - name: peer-udp
+              containerPort: 6881
+              protocol: UDP
+          readinessProbe:
+            tcpSocket:
+              port: 4242
+            periodSeconds: 15
+            timeoutSeconds: 10
+            failureThreshold: 30
+          livenessProbe:
+            tcpSocket:
+              port: 4242
+            initialDelaySeconds: 300
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 2Gi
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: torrents
+              mountPath: /data/torrents
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: qbittorrent-config
+        - name: torrents
+          hostPath:
+            path: /mnt/pool-data/torrents
+            type: Directory

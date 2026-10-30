@@ -1,12 +1,20 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
+  - arr
+  - bazarr
   - comida
+  - configarr
   - couchdb
+  - flaresolverr
   - kafka
   - mapa
   - mealie
   - muad-dib
   - overseerr
   - postgres
+  - prowlarr
+  - qbittorrent
+  - radarr
   - samsa
+  - sonarr

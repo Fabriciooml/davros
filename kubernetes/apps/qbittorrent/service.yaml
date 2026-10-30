@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: qbittorrent
+  namespace: arr
+spec:
+  selector:
+    app: qbittorrent
+  ports:
+    - name: http
+      port: 4242
+      targetPort: 4242
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: qbittorrent-peer
+  namespace: arr
+spec:
+  type: LoadBalancer
+  selector:
+    app: qbittorrent
+  ports:
+    - name: peer-tcp
+      port: 6881
+      targetPort: 6881
+      protocol: TCP
+    - name: peer-udp
+      port: 6881
+      targetPort: 6881
+      protocol: UDP

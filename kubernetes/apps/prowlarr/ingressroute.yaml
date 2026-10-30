@@ -1,0 +1,15 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: prowlarr
+  namespace: arr
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`prowlarr.local.fabriciooml.dev`)
+      kind: Rule
+      services:
+        - name: prowlarr
+          port: 9696
+  tls: {}
