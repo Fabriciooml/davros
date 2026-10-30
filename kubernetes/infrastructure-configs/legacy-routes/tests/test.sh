@@ -44,7 +44,6 @@ check() {
 }
 
 d=local.fabriciooml.dev
-check bazarr      "bazarr.$d"     192.168.31.226 6767  http
 check portainer   "docker.$d"     192.168.31.226 9443  https
 check haos        "haos.$d"       192.168.31.128 8123  http
 check plex        "plex.$d"       192.168.31.83  32400 http

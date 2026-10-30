@@ -3,7 +3,6 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - serverstransport.yaml
-  - bazarr.yaml
   - haos.yaml
   - jellyfin.yaml
   - pihole.yaml
