@@ -29,4 +29,11 @@ pvc=$(echo "$built" | yq e 'select(.kind == "PersistentVolumeClaim" and .metadat
 svc=$(echo "$built" | yq e 'select(.kind == "Service" and .metadata.name == "radarr")' -)
 [ "$(echo "$svc" | yq e '.spec.ports[0].port' -)" = "7878" ] || { echo "FAIL: Service port must be 7878"; exit 1; }
 
+[ "$(echo "$dep" | yq e '.spec.replicas' -)" = "1" ] || { echo "FAIL: replicas must be 1 after cutover"; exit 1; }
+
+route=$(echo "$built" | yq e 'select(.kind == "IngressRoute" and .metadata.name == "radarr")' -)
+echo "$route" | grep -qF 'Host(`radarr.local.fabriciooml.dev`)' || { echo "FAIL: LAN host radarr.local.fabriciooml.dev missing"; exit 1; }
+[ "$(echo "$route" | yq e '.spec.routes[0].services[0].port' -)" = "7878" ] || { echo "FAIL: route must target port 7878"; exit 1; }
+[ "$(echo "$route" | yq e '.spec.tls | has("secretName")' -)" = "false" ] || { echo "FAIL: route must use the default TLSStore"; exit 1; }
+
 echo "PASS"

@@ -10,5 +10,4 @@ resources:
   - plex.yaml
   - portainer.yaml
   - proxmox.yaml
-  - radarr.yaml
   - vaultwarden.yaml

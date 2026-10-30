@@ -44,7 +44,6 @@ check() {
 }
 
 d=local.fabriciooml.dev
-check radarr      "radarr.$d"     192.168.31.226 7878  http
 check bazarr      "bazarr.$d"     192.168.31.226 6767  http
 check portainer   "docker.$d"     192.168.31.226 9443  https
 check haos        "haos.$d"       192.168.31.128 8123  http
