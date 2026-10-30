@@ -9,7 +9,6 @@ resources:
   - pihole.yaml
   - plex.yaml
   - portainer.yaml
-  - prowlarr.yaml
   - proxmox.yaml
   - qbittorrent.yaml
   - radarr.yaml
