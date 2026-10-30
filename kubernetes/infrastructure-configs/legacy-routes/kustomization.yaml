@@ -10,7 +10,6 @@ resources:
   - plex.yaml
   - portainer.yaml
   - proxmox.yaml
-  - qbittorrent.yaml
   - radarr.yaml
   - sonarr.yaml
   - vaultwarden.yaml

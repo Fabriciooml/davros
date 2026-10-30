@@ -44,7 +44,6 @@ check() {
 }
 
 d=local.fabriciooml.dev
-check qbittorrent "torrent.$d"    192.168.31.226 4242  http
 check radarr      "radarr.$d"     192.168.31.226 7878  http
 check sonarr      "sonarr.$d"     192.168.31.226 8989  http
 check bazarr      "bazarr.$d"     192.168.31.226 6767  http

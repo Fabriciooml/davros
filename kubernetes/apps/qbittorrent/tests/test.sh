@@ -33,4 +33,11 @@ peer=$(echo "$built" | yq e 'select(.kind == "Service" and .metadata.name == "qb
 [ "$(echo "$peer" | yq e '.spec.type' -)" = "LoadBalancer" ] || { echo "FAIL: peer Service must be a LoadBalancer"; exit 1; }
 [ "$(echo "$peer" | yq e '[.spec.ports[] | select(.port == 6881) | .protocol] | sort | join(",")' -)" = "TCP,UDP" ] || { echo "FAIL: peer Service must expose 6881 tcp and udp"; exit 1; }
 
+[ "$(echo "$dep" | yq e '.spec.replicas' -)" = "1" ] || { echo "FAIL: replicas must be 1 after cutover"; exit 1; }
+
+route=$(echo "$built" | yq e 'select(.kind == "IngressRoute" and .metadata.name == "qbittorrent")' -)
+echo "$route" | grep -qF 'Host(`torrent.local.fabriciooml.dev`)' || { echo "FAIL: LAN host torrent.local.fabriciooml.dev missing"; exit 1; }
+[ "$(echo "$route" | yq e '.spec.routes[0].services[0].port' -)" = "4242" ] || { echo "FAIL: route must target port 4242"; exit 1; }
+[ "$(echo "$route" | yq e '.spec.tls | has("secretName")' -)" = "false" ] || { echo "FAIL: route must use the default TLSStore"; exit 1; }
+
 echo "PASS"
