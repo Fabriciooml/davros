@@ -11,5 +11,4 @@ resources:
   - portainer.yaml
   - proxmox.yaml
   - radarr.yaml
-  - sonarr.yaml
   - vaultwarden.yaml

@@ -4,7 +4,7 @@ metadata:
   name: sonarr
   namespace: arr
 spec:
-  replicas: 0
+  replicas: 1
   progressDeadlineSeconds: 1200
   strategy:
     type: Recreate
