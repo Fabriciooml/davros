@@ -12,7 +12,7 @@ dep=$(echo "$built" | yq e 'select(.kind == "Deployment" and .metadata.name == "
 echo "$dep" | yq e '.spec.template.spec.containers[0].image' - | grep -Eq '^jellyfin/jellyfin:10\.11\.8@sha256:[0-9a-f]{64}$' || { echo "FAIL: image must be pinned to 10.11.8 with a digest"; exit 1; }
 [ "$(echo "$dep" | yq e '.spec.strategy.type' -)" = "Recreate" ] || { echo "FAIL: RWO volume needs Recreate"; exit 1; }
 [ "$(echo "$dep" | yq e '.spec.template.spec.enableServiceLinks' -)" = "false" ] || { echo "FAIL: service-link env vars must be off"; exit 1; }
-[ "$(echo "$dep" | yq e '.spec.replicas' -)" = "0" ] || { echo "FAIL: replicas must be 0 until cutover"; exit 1; }
+[ "$(echo "$dep" | yq e '.spec.replicas' -)" = "1" ] || { echo "FAIL: replicas must be 1 after cutover"; exit 1; }
 for kv in JELLYFIN_DATA_DIR=/var/lib/jellyfin JELLYFIN_CONFIG_DIR=/etc/jellyfin JELLYFIN_CACHE_DIR=/var/cache/jellyfin JELLYFIN_LOG_DIR=/var/log/jellyfin; do
   k=${kv%%=*}
   v=${kv#*=}
@@ -34,7 +34,7 @@ lan=$(echo "$built" | yq e 'select(.kind == "Service" and .metadata.name == "jel
 svc=$(echo "$built" | yq e 'select(.kind == "Service" and .metadata.name == "jellyfin")' -)
 [ "$(echo "$svc" | yq e '.spec.ports[0].port' -)" = "8096" ] || { echo "FAIL: Service port must be 8096"; exit 1; }
 
-route=$(yq e '.' ingressroute.yaml)
+route=$(echo "$built" | yq e 'select(.kind == "IngressRoute" and .metadata.name == "jellyfin")' -)
 echo "$route" | grep -qF 'Host(`jellyfin.local.fabriciooml.dev`)' || { echo "FAIL: LAN host jellyfin.local.fabriciooml.dev missing"; exit 1; }
 [ "$(echo "$route" | yq e '.spec.routes[0].services[0].port' -)" = "8096" ] || { echo "FAIL: route must target port 8096"; exit 1; }
 [ "$(echo "$route" | yq e '.spec.tls | has("secretName")' -)" = "false" ] || { echo "FAIL: route must use the default TLSStore"; exit 1; }
