@@ -7,14 +7,17 @@ resources:
   - configarr
   - couchdb
   - flaresolverr
+  - jellyfin
   - kafka
   - mapa
   - mealie
   - muad-dib
   - overseerr
+  - plex
   - postgres
   - prowlarr
   - qbittorrent
   - radarr
   - samsa
   - sonarr
+  - vaultwarden

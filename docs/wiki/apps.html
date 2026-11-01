@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Davros Apps</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="apps">
+<main>
+  <section class="section">
+    <h2>App catalog</h2>
+    <p>Generated from <code>kubernetes/apps/</code> by <code>make wiki-catalog</code>. Hostnames are masked.</p>
+    <div class="bar">
+      <input id="q" type="search" placeholder="search apps…" aria-label="Search apps">
+      <button class="chip" data-filter="all" aria-pressed="true">all</button>
+      <button class="chip" data-filter="public" aria-pressed="false">public</button>
+      <button class="chip" data-filter="lan" aria-pressed="false">LAN</button>
+      <button class="chip" data-filter="stateful" aria-pressed="false">stateful</button>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="empty" id="empty" role="status" hidden>no apps match.</div>
+  </section>
+</main>
+<script src="data/apps.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

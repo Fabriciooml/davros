@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Davros Runbooks</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="runbooks">
+<main>
+  <section class="section">
+    <h2>Runbooks</h2>
+    <p>Commands marked <strong>REAL</strong> change real infrastructure and ask for confirmation first.</p>
+
+    <details id="bootstrap">
+      <summary>Bootstrap from scratch</summary>
+      <ol>
+        <li>Create the k3s LXC node and install k3s (REAL).</li>
+        <li>Merge the generated kubeconfig into <code>~/.kube/config</code>.</li>
+        <li>Export a GitHub PAT with the <code>repo</code> scope (or put it in <code>.env</code>), then bootstrap Flux (REAL, once per cluster lifetime).</li>
+        <li>Deliver the SOPS age key into <code>flux-system</code> so Flux can decrypt secrets (REAL). Restore your existing key to <code>AGE_KEY_FILE</code> first: if none exists there, <code>make sops-age-secret</code> generates a NEW key (after a confirm prompt), which will not match <code>.sops.yaml</code> and cannot decrypt the repo's secrets.</li>
+        <li>Apply DNS and tunnel rules for public apps (REAL).</li>
+      </ol>
+<pre><code>make apply-cluster
+make kubeconfig
+export GITHUB_TOKEN=...
+make flux-bootstrap
+make sops-age-secret
+make apply-cloudflare</code></pre>
+      <p>Or run <code>make bootstrap</code>, which does all of the above in order and still asks to confirm at each real step.</p>
+    </details>
+
+    <details id="add-app">
+      <summary>Add an app</summary>
+      <ol>
+        <li>Create <code>kubernetes/apps/&lt;app&gt;/</code> with <code>namespace.yaml</code>, <code>pvc.yaml</code> (storage class <code>local-path</code>), <code>deployment.yaml</code>, <code>service.yaml</code>, <code>ingressroute.yaml</code> and a <code>kustomization.yaml</code> listing them. Copy a similar app such as <code>mealie</code> as the starting point.</li>
+        <li>Pin the image by tag and digest unless it is one of your own apps that should follow new builds.</li>
+        <li>LAN route: host <code>&lt;app&gt;.local.&lt;domain&gt;</code> on <code>websecure</code> with <code>tls: {}</code> (default TLS store).</li>
+        <li>Add a <code>tests/test.sh</code> (kustomize build, kubeconform, yq assertions) like the neighbouring apps.</li>
+        <li>Add <code>- &lt;app&gt;</code> to <code>kubernetes/apps/kustomization.yaml</code>.</li>
+        <li>Public app: add a second host <code>&lt;app&gt;.&lt;domain&gt;</code> to the IngressRoute and an entry in the <code>public_apps</code> map in your local <code>terraform/cloudflare/terraform.tfvars</code> (git-ignored; see <code>terraform.tfvars.example</code>). The key is the app name, which becomes the hostname <code>&lt;app&gt;.&lt;domain&gt;</code>, and <code>target_url</code> is the origin the tunnel forwards to, e.g. <code>&lt;app&gt; = { target_url = "&lt;origin-url&gt;" }</code>. Then run <code>make apply-cloudflare</code> (REAL).</li>
+        <li>Add a description to <code>docs/wiki/data/app-notes.json</code> and run <code>make wiki-catalog</code>.</li>
+        <li>Run the tests, commit and push. Flux applies it within its 10 minute interval.</li>
+      </ol>
+<pre><code>make test-kubernetes
+make wiki-catalog
+git add kubernetes/apps docs/wiki &amp;&amp; git commit -m "feat: &lt;app&gt;" &amp;&amp; git push
+flux reconcile kustomization apps --with-source   # optional, skip the wait</code></pre>
+    </details>
+
+    <details id="sops">
+      <summary>Rotate or edit a SOPS secret</summary>
+      <p>Secrets live in <code>*.sops.yaml</code> files and are encrypted to the age public key in <code>.sops.yaml</code>. Flux decrypts them with the <code>sops-age</code> secret in <code>flux-system</code>.</p>
+      <p><strong>Change a secret value:</strong></p>
+<pre><code>sops kubernetes/apps/&lt;app&gt;/&lt;name&gt;.sops.yaml     # opens in $EDITOR, re-encrypts on save
+git commit -am "chore: rotate &lt;name&gt;" &amp;&amp; git push</code></pre>
+      <p><strong>Rotate the age key:</strong></p>
+      <ol>
+        <li>Generate a new keypair with <code>age-keygen -o new.agekey</code> and keep the private file out of the repo (<code>*.agekey</code> is git-ignored).</li>
+        <li>Add the new public key to <code>.sops.yaml</code> alongside the old one.</li>
+        <li>Run <code>sops updatekeys</code> on every secret file, with the old key available (e.g. via <code>SOPS_AGE_KEY_FILE</code>) so it can decrypt.</li>
+        <li>Remove the old recipient from <code>.sops.yaml</code>. This alone changes nothing: the old key stays a recipient of every already-encrypted file until <code>updatekeys</code> is run again.</li>
+        <li>Run <code>sops updatekeys</code> on every secret file AGAIN so the old key is dropped from the files.</li>
+        <li>Commit and push <code>.sops.yaml</code> and the re-encrypted files.</li>
+        <li>Point <code>AGE_KEY_FILE</code> at the new key (default <code>~/.config/sops/age/keys.txt</code>) and deliver it to the cluster (REAL).</li>
+      </ol>
+<pre><code># steps 3 and 5 (run after adding the new key, and again after removing the old one)
+find kubernetes -name '*.sops.yaml' -exec sops updatekeys -y {} \;
+# step 7
+AGE_KEY_FILE=./new.agekey make sops-age-secret</code></pre>
+    </details>
+
+    <details id="backup">
+      <summary>Backup and restore app data</summary>
+      <p>A cron job on the Proxmox host runs <code>k8s-data-backup.sh</code> nightly at 02:45. It rsyncs the app-data disk (<code>/mnt/hd2tb-k8s-appdata</code>) into a dated directory on the backup disk, hardlinking unchanged files against the previous snapshot, and keeps the 7 newest snapshots. Install or re-install it on the host with <code>scripts/proxmox-host/setup-backup-storage.sh</code> then <code>setup-backup-jobs.sh</code> (run as root on the Proxmox host).</p>
+      <p><strong>Restore one app:</strong></p>
+      <ol>
+        <li>Find the app's volume directory: PVCs use the <code>local-path</code> provisioner, which stores each volume as <code>pvc-&lt;uid&gt;_&lt;namespace&gt;_&lt;claim&gt;</code> under <code>/var/lib/local-pv</code> in the k3s LXC. That path is bind-mounted from <code>/mnt/hd2tb-k8s-appdata/local-pv</code> on the Proxmox host. List them with <code>kubectl get pvc -n &lt;namespace&gt;</code> (the VOLUME column is the <code>pvc-&lt;uid&gt;</code> part).</li>
+        <li>Pause Flux so it does not scale the app back up, then scale the app down. Note that suspending the <code>apps</code> kustomization pauses reconciliation for EVERY app, so resume it promptly.</li>
+        <li>On the Proxmox host, rsync the wanted snapshot's copy of that directory over the live one.</li>
+        <li>Scale back up to the original replica count (1 unless the manifest says otherwise) and resume Flux.</li>
+      </ol>
+<p><strong>Warning:</strong> the rsync below uses <code>--delete</code> and overwrites the live directory, removing anything newer than the snapshot. Confirm <code>&lt;date&gt;</code> and <code>&lt;pvc-dir&gt;</code> are correct and the snapshot directory is not empty. Run the <code>-n</code> dry run first and read its output, and consider copying the live directory aside before the real run.</p>
+<pre><code># --- on the machine with kubectl ---
+flux suspend kustomization apps
+kubectl -n &lt;namespace&gt; scale deploy/&lt;app&gt; --replicas=0
+
+# --- on the Proxmox host (snapshots: /mnt/hd2tb-backup/k8s-data/&lt;date&gt;/hd2tb-k8s-appdata/local-pv/) ---
+ls /mnt/hd2tb-backup/k8s-data/&lt;date&gt;/hd2tb-k8s-appdata/local-pv/&lt;pvc-dir&gt;/
+cp -a /mnt/hd2tb-k8s-appdata/local-pv/&lt;pvc-dir&gt; /mnt/hd2tb-k8s-appdata/local-pv/&lt;pvc-dir&gt;.bak   # optional safety copy
+rsync -naHAX --numeric-ids --delete -v /mnt/hd2tb-backup/k8s-data/&lt;date&gt;/hd2tb-k8s-appdata/local-pv/&lt;pvc-dir&gt;/ /mnt/hd2tb-k8s-appdata/local-pv/&lt;pvc-dir&gt;/   # dry run
+rsync -aHAX --numeric-ids --delete /mnt/hd2tb-backup/k8s-data/&lt;date&gt;/hd2tb-k8s-appdata/local-pv/&lt;pvc-dir&gt;/ /mnt/hd2tb-k8s-appdata/local-pv/&lt;pvc-dir&gt;/
+
+# --- back on the machine with kubectl ---
+kubectl -n &lt;namespace&gt; scale deploy/&lt;app&gt; --replicas=&lt;replicas&gt;
+flux resume kustomization apps</code></pre>
+      <p>Check the app's logs after it comes up before trusting the restore. Once the app is verified, delete <code>&lt;pvc-dir&gt;.bak</code> (it is also picked up by the nightly backup).</p>
+    </details>
+  </section>
+</main>
+<script src="data/apps.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

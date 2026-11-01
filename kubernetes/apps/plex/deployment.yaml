@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: plex
+  namespace: plex
+spec:
+  replicas: 0
+  progressDeadlineSeconds: 1200
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: plex
+  template:
+    metadata:
+      labels:
+        app: plex
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: plex
+          image: plexinc/pms-docker:1.43.0.10492-121068a07@sha256:1131c4cd21fa22f8196f749f1dbb69af306776c3c83c7f5b061e51dc49bcff7f
+          env:
+            - name: PLEX_UID
+              value: "1000"
+            - name: PLEX_GID
+              value: "1000"
+            - name: TZ
+              value: America/Sao_Paulo
+            - name: ADVERTISE_IP
+              value: http://192.168.31.240:32400/
+          ports:
+            - containerPort: 32400
+          readinessProbe:
+            httpGet:
+              path: /identity
+              port: 32400
+            periodSeconds: 15
+            timeoutSeconds: 10
+            failureThreshold: 40
+          livenessProbe:
+            httpGet:
+              path: /identity
+              port: 32400
+            initialDelaySeconds: 300
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 15
+          resources:
+            requests:
+              cpu: 250m
+              memory: 768Mi
+            limits:
+              memory: 3Gi
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: transcode
+              mountPath: /transcode
+            - name: tv
+              mountPath: /mnt/tv
+              readOnly: true
+            - name: movies
+              mountPath: /mnt/movies
+              readOnly: true
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: plex-config
+        - name: transcode
+          emptyDir: {}
+        - name: tv
+          hostPath:
+            path: /mnt/pool-data/media/tv
+            type: Directory
+        - name: movies
+          hostPath:
+            path: /mnt/pool-data/media/movies
+            type: Directory

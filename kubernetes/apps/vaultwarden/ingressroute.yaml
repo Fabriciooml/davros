@@ -1,0 +1,15 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: vaultwarden
+  namespace: vaultwarden
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`vault.local.fabriciooml.dev`) || Host(`vault.fabriciooml.dev`)
+      kind: Rule
+      services:
+        - name: vaultwarden
+          port: 8080
+  tls: {}

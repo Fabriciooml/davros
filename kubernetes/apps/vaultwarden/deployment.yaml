@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vaultwarden
+  namespace: vaultwarden
+spec:
+  replicas: 0
+  progressDeadlineSeconds: 1200
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: vaultwarden
+  template:
+    metadata:
+      labels:
+        app: vaultwarden
+    spec:
+      enableServiceLinks: false
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+      containers:
+        - name: vaultwarden
+          image: vaultwarden/server:1.37.4@sha256:efb3cde962015fcc036b2ea625242248611943b27212ebf4392841fb30fad055
+          env:
+            - name: DOMAIN
+              value: https://vault.fabriciooml.dev
+            - name: ROCKET_PORT
+              value: "8080"
+            - name: DATA_FOLDER
+              value: /data
+            - name: WEB_VAULT_ENABLED
+              value: "true"
+            - name: TZ
+              value: America/Sao_Paulo
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /alive
+              port: 8080
+            periodSeconds: 15
+            timeoutSeconds: 10
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /alive
+              port: 8080
+            initialDelaySeconds: 120
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 10
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: vaultwarden-data

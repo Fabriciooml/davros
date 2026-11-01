@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Davros Overview</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="index">
+<main>
+  <section class="hero">
+    <img class="hero-img" src="images/davros.jpg" alt="Davros">
+    <div>
+      <h1>DAVROS</h1>
+      <p>Homelab Kubernetes cluster. OpenTofu provisions the infrastructure, Flux drives everything inside the cluster from git, SOPS and age keep secrets safe in a public repo. Constant attention required. Cooperation not guaranteed.</p>
+    </div>
+  </section>
+
+  <div class="stats">
+    <div class="stat"><b data-stat="apps">–</b><span>apps</span></div>
+    <div class="stat"><b data-stat="public">–</b><span>public</span></div>
+    <div class="stat"><b data-stat="stateful">–</b><span>stateful</span></div>
+    <div class="stat"><b>2</b><span>wildcard certs</span></div>
+  </div>
+
+  <section class="section">
+    <h2>Stack</h2>
+    <div class="grid">
+      <div class="card"><h3>Proxmox VE</h3><p>The one physical host everything runs on.</p></div>
+      <div class="card"><h3>k3s</h3><p>Single node, inside a privileged LXC container on Proxmox.</p></div>
+      <div class="card"><h3>Flux</h3><p>Bootstrapped against the repo; reconciles everything under <code>kubernetes/</code>.</p></div>
+      <div class="card"><h3>SOPS + age</h3><p>Encrypts <code>*.sops.yaml</code> files before they are committed.</p></div>
+      <div class="card"><h3>cert-manager</h3><p>Let's Encrypt wildcard certs: one LAN-only, one public.</p></div>
+      <div class="card"><h3>Traefik</h3><p>Ingress controller for both LAN and public routes.</p></div>
+      <div class="card"><h3>OpenTofu</h3><p>Creates the LXC node and installs k3s; manages Cloudflare DNS and tunnel rules.</p></div>
+      <div class="card"><h3>Cloudflare Tunnel</h3><p>Exposes the public apps without opening inbound ports.</p></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Architecture</h2>
+    <div class="diagram-wrap">
+    <svg class="diagram" viewBox="0 0 900 500" role="img" aria-label="Traffic and GitOps flow: Internet through Cloudflare Tunnel and LAN into Traefik and the apps on a k3s node inside Proxmox; Flux pulls from the git repo.">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#33e1ff"/></marker>
+        <marker id="arrow-pub" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#e6b25c"/></marker>
+        <marker id="arrow-mute" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#8a96a2"/></marker>
+      </defs>
+
+      <rect class="box host" x="250" y="20" width="630" height="400" rx="16"/>
+      <text class="title" x="268" y="44">PROXMOX VE HOST</text>
+      <rect class="box" x="270" y="60" width="590" height="340" rx="14"/>
+      <text class="title" x="288" y="84">K3S NODE (PRIVILEGED LXC)</text>
+
+      <rect class="node" x="20" y="90" width="130" height="50" rx="10"/>
+      <text x="85" y="120">Internet</text>
+      <rect class="node" x="20" y="190" width="130" height="60" rx="10"/>
+      <text x="85" y="216">Cloudflare</text>
+      <text x="85" y="234">Tunnel</text>
+      <rect class="node" x="20" y="310" width="130" height="50" rx="10"/>
+      <text x="85" y="340">LAN</text>
+
+      <rect class="node hot" x="300" y="190" width="130" height="60" rx="10"/>
+      <text x="365" y="226">Traefik</text>
+      <rect class="node hot" x="520" y="150" width="150" height="140" rx="10"/>
+      <text x="595" y="212">apps</text>
+      <text x="595" y="232">kubernetes/apps</text>
+      <rect class="node" x="690" y="90" width="150" height="56" rx="10"/>
+      <text x="765" y="123">Flux</text>
+      <rect class="node" x="690" y="440" width="150" height="44" rx="10"/>
+      <text x="765" y="467">Git repo</text>
+
+      <path class="edge pub" d="M85 140V190"/>
+      <path class="edge pub" d="M150 220H300"/>
+      <path class="edge" d="M150 335H365V250"/>
+      <path class="edge" d="M430 220H520"/>
+      <path class="edge git" d="M765 440V146"/>
+      <path class="edge git" d="M690 118H595V150"/>
+
+      <text class="label" x="160" y="212">public</text>
+      <text class="label" x="160" y="327">local</text>
+      <text class="label" x="775" y="300">pull</text>
+      <text class="label" x="602" y="135">reconcile</text>
+    </svg>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Repo layout</h2>
+<pre><code>terraform/
+  k3s-cluster/          the LXC node + k3s install
+  cloudflare/           DNS records + tunnel ingress rules for public apps
+  modules/              reusable modules (public-app-ingress)
+kubernetes/
+  flux-system/          Flux's own bootstrap manifests
+  infrastructure/       HelmReleases: cert-manager, traefik, storage, monitoring
+  infrastructure-configs/  CRs that need the charts first (issuers, certs, routes)
+  apps/                 workload apps, one directory each
+scripts/proxmox-host/   one-off setup scripts run on the Proxmox host</code></pre>
+  </section>
+</main>
+<script src="data/apps.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jellyfin
+  namespace: jellyfin
+spec:
+  replicas: 0
+  progressDeadlineSeconds: 1200
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: jellyfin
+  template:
+    metadata:
+      labels:
+        app: jellyfin
+    spec:
+      enableServiceLinks: false
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+      containers:
+        - name: jellyfin
+          image: jellyfin/jellyfin:10.11.8@sha256:1694ff069f0c9dafb283c36765175606866769f5d72f2ed56b6a0f1be922fc37
+          env:
+            - name: JELLYFIN_DATA_DIR
+              value: /var/lib/jellyfin
+            - name: JELLYFIN_CONFIG_DIR
+              value: /etc/jellyfin
+            - name: JELLYFIN_CACHE_DIR
+              value: /var/cache/jellyfin
+            - name: JELLYFIN_LOG_DIR
+              value: /var/log/jellyfin
+            - name: TZ
+              value: America/Sao_Paulo
+          ports:
+            - containerPort: 8096
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8096
+            periodSeconds: 15
+            timeoutSeconds: 10
+            failureThreshold: 40
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8096
+            initialDelaySeconds: 300
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 15
+          resources:
+            requests:
+              cpu: 250m
+              memory: 768Mi
+            limits:
+              memory: 3Gi
+          volumeMounts:
+            - name: config
+              mountPath: /var/lib/jellyfin
+              subPath: lib
+            - name: config
+              mountPath: /etc/jellyfin
+              subPath: etc
+            - name: cache
+              mountPath: /var/cache/jellyfin
+            - name: logs
+              mountPath: /var/log/jellyfin
+            - name: tv
+              mountPath: /mnt/tv
+            - name: movies
+              mountPath: /mnt/movies
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: jellyfin-config
+        - name: cache
+          emptyDir: {}
+        - name: logs
+          emptyDir: {}
+        - name: tv
+          hostPath:
+            path: /mnt/pool-data/media/tv
+            type: Directory
+        - name: movies
+          hostPath:
+            path: /mnt/pool-data/media/movies
+            type: Directory

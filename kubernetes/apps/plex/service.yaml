@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: plex
+  namespace: plex
+spec:
+  selector:
+    app: plex
+  ports:
+    - name: http
+      port: 32400
+      targetPort: 32400
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: plex-lan
+  namespace: plex
+spec:
+  type: LoadBalancer
+  selector:
+    app: plex
+  ports:
+    - name: http
+      port: 32400
+      targetPort: 32400

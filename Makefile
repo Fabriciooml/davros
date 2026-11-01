@@ -35,6 +35,10 @@ test-kubernetes:
 		bash "$$script"; \
 	done
 
+.PHONY: wiki-catalog
+wiki-catalog: ## regenerate docs/wiki/data/apps.json (+ apps.js) from kubernetes/apps
+	python3 scripts/gen-wiki-catalog.py
+
 .PHONY: fmt
 fmt: ## tofu fmt every terraform root and module
 	@for dir in $(TF_ROOTS) $$(find terraform/modules -mindepth 1 -maxdepth 1 -type d); do \
