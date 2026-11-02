@@ -13,6 +13,12 @@ echo "$dep" | yq e '.spec.template.spec.containers[0].image' - | grep -Eq '^jell
 [ "$(echo "$dep" | yq e '.spec.strategy.type' -)" = "Recreate" ] || { echo "FAIL: RWO volume needs Recreate"; exit 1; }
 [ "$(echo "$dep" | yq e '.spec.template.spec.enableServiceLinks' -)" = "false" ] || { echo "FAIL: service-link env vars must be off"; exit 1; }
 [ "$(echo "$dep" | yq e '.spec.replicas' -)" = "1" ] || { echo "FAIL: replicas must be 1 after cutover"; exit 1; }
+[ "$(echo "$dep" | yq e '.spec.template.spec.runtimeClassName' -)" = "nvidia" ] || { echo "FAIL: runtimeClassName must be nvidia for GPU transcoding"; exit 1; }
+for kv in NVIDIA_VISIBLE_DEVICES=all NVIDIA_DRIVER_CAPABILITIES=compute,video,utility; do
+  k=${kv%%=*}
+  v=${kv#*=}
+  [ "$(echo "$dep" | yq e ".spec.template.spec.containers[0].env[] | select(.name == \"$k\") | .value" -)" = "$v" ] || { echo "FAIL: $k must be $v"; exit 1; }
+done
 for kv in JELLYFIN_DATA_DIR=/var/lib/jellyfin JELLYFIN_CONFIG_DIR=/etc/jellyfin JELLYFIN_CACHE_DIR=/var/cache/jellyfin JELLYFIN_LOG_DIR=/var/log/jellyfin; do
   k=${kv%%=*}
   v=${kv#*=}

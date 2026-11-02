@@ -17,6 +17,7 @@ spec:
         app: jellyfin
     spec:
       enableServiceLinks: false
+      runtimeClassName: nvidia
       securityContext:
         runAsUser: 1000
         runAsGroup: 1000
@@ -34,6 +35,10 @@ spec:
               value: /var/log/jellyfin
             - name: TZ
               value: America/Sao_Paulo
+            - name: NVIDIA_VISIBLE_DEVICES
+              value: all
+            - name: NVIDIA_DRIVER_CAPABILITIES
+              value: compute,video,utility
           ports:
             - containerPort: 8096
           readinessProbe:
