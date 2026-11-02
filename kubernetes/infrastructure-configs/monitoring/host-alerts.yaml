@@ -1,0 +1,77 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: host-alerts
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: proxmox-host
+      rules:
+        - alert: ZpoolUsageHigh
+          expr: homelab_zpool_allocated_bytes / homelab_zpool_size_bytes > 0.85
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: ZFS pool {{ $labels.pool }} is over 85% full
+        - alert: ZpoolUsageHigh
+          expr: homelab_zpool_allocated_bytes / homelab_zpool_size_bytes > 0.92
+          for: 15m
+          labels:
+            severity: critical
+          annotations:
+            summary: ZFS pool {{ $labels.pool }} is over 92% full
+        - alert: ZpoolNotOnline
+          expr: homelab_zpool_health{state!="ONLINE"} == 1
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: ZFS pool {{ $labels.pool }} is {{ $labels.state }}
+        - alert: DiskSmartUnhealthy
+          expr: homelab_smart_healthy == 0 or homelab_smart_pending_sectors > 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: Disk {{ $labels.device }} reports SMART problems
+        - alert: DiskSmartUnreadable
+          expr: homelab_smart_scrape_ok == 0
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: SMART data for disk {{ $labels.device }} cannot be read
+        - alert: DiskTemperatureHigh
+          expr: |
+            (homelab_smart_temperature_celsius > 55 and on(instance, device) homelab_smart_rotational == 1)
+            or
+            (homelab_smart_temperature_celsius > 70 and on(instance, device) homelab_smart_rotational == 0)
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: Disk {{ $labels.device }} is at {{ $value }}C
+        - alert: HostIoPressureHigh
+          expr: rate(node_pressure_io_waiting_seconds_total{job="proxmox-host"}[5m]) > 0.5
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: Proxmox host tasks spend over half their time waiting on disk I/O
+        - alert: HostExporterDown
+          expr: up{job="proxmox-host"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: The Proxmox host exporter is unreachable
+        - alert: HostMetricsStale
+          expr: time() - homelab_collector_last_success_timestamp_seconds > 900
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: The {{ $labels.collector }} collector has not succeeded for 15 minutes

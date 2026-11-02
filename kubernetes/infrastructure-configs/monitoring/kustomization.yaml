@@ -4,3 +4,5 @@ resources:
   - grafana-admin-credentials.sops.yaml
   - grafana-ingressroute.yaml
   - prometheus-ingressroute.yaml
+  - host-scrapeconfig.yaml
+  - host-alerts.yaml

@@ -43,4 +43,25 @@ esac
 [ "$(echo "$prometheus_route" | yq e '.spec.routes[0].services[0].name' -)" = "kube-prometheus-stack-prometheus" ] || { echo "FAIL: prometheus route must point at the kube-prometheus-stack-prometheus service"; exit 1; }
 [ "$(echo "$prometheus_route" | yq e '.spec.routes[0].services[0].port' -)" = "9090" ] || { echo "FAIL: prometheus route must target port 9090"; exit 1; }
 
+scrape=$(echo "$built" | yq e 'select(.kind == "ScrapeConfig" and .metadata.name == "proxmox-host")' -)
+[ -n "$scrape" ] || { echo "FAIL: no proxmox-host ScrapeConfig found"; exit 1; }
+[ "$(echo "$scrape" | yq e '.metadata.namespace' -)" = "monitoring" ] || { echo "FAIL: scrapeconfig must live in the monitoring namespace"; exit 1; }
+[ "$(echo "$scrape" | yq e '.metadata.labels.release' -)" = "kube-prometheus-stack" ] || { echo "FAIL: scrapeconfig needs release: kube-prometheus-stack or prometheus ignores it"; exit 1; }
+[ "$(echo "$scrape" | yq e '.spec.jobName' -)" = "proxmox-host" ] || { echo "FAIL: scrape job must be named proxmox-host"; exit 1; }
+[ "$(echo "$scrape" | yq e '.spec.staticConfigs[0].targets[0]' -)" = "192.168.31.42:9100" ] || { echo "FAIL: scrape target must be the host exporter on the lan address"; exit 1; }
+[ "$(echo "$scrape" | yq e '.spec.scrapeInterval' -)" = "60s" ] || { echo "FAIL: scrape interval must be 60s to keep prometheus memory small"; exit 1; }
+
+rules=$(echo "$built" | yq e 'select(.kind == "PrometheusRule" and .metadata.name == "host-alerts")' -)
+[ -n "$rules" ] || { echo "FAIL: no host-alerts PrometheusRule found"; exit 1; }
+[ "$(echo "$rules" | yq e '.metadata.labels.release' -)" = "kube-prometheus-stack" ] || { echo "FAIL: rules need release: kube-prometheus-stack or prometheus ignores them"; exit 1; }
+alert_names=$(echo "$rules" | yq e '.spec.groups[].rules[].alert' -)
+for name in ZpoolUsageHigh ZpoolNotOnline DiskSmartUnhealthy DiskSmartUnreadable DiskTemperatureHigh HostIoPressureHigh HostExporterDown HostMetricsStale; do
+  grep -qx "$name" <<<"$alert_names" || { echo "FAIL: missing alert $name"; exit 1; }
+done
+[ "$(echo "$rules" | yq e '[.spec.groups[].rules[] | select(.alert == "ZpoolUsageHigh")] | length' -)" = "2" ] || { echo "FAIL: ZpoolUsageHigh needs a warning and a critical rule"; exit 1; }
+[ "$(echo "$rules" | yq e '[.spec.groups[].rules[] | select(.alert == "ZpoolUsageHigh") | .labels.severity] | sort | join(",")' -)" = "critical,warning" ] || { echo "FAIL: ZpoolUsageHigh needs one warning and one critical rule"; exit 1; }
+[ "$(echo "$rules" | yq e '.spec.groups[].rules[] | select(.alert == "ZpoolUsageHigh" and .labels.severity == "warning") | .expr' -)" = "homelab_zpool_allocated_bytes / homelab_zpool_size_bytes > 0.85" ] || { echo "FAIL: warning rule must not have an upper bound (inhibit rule mutes it)"; exit 1; }
+missing_severity=$(echo "$rules" | yq e '[.spec.groups[].rules[] | select(.labels.severity == null)] | length' -)
+[ "$missing_severity" = "0" ] || { echo "FAIL: every rule needs a severity label for alert routing"; exit 1; }
+
 echo "PASS"
