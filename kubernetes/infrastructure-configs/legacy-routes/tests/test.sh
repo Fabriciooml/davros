@@ -48,7 +48,6 @@ check portainer   "docker.$d"     192.168.31.226 9443  https
 check haos        "haos.$d"       192.168.31.128 8123  http
 check plex        "plex.$d"       192.168.31.83  32400 http
 check proxmox     "proxmox.$d"    192.168.31.42  8006  https
-check vaultwarden "vault.$d"      192.168.31.108 8000  https
 check pihole      "pihole.$d"     192.168.31.152 80    http
 
 echo "PASS"
