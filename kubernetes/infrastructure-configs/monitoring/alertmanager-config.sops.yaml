@@ -1,0 +1,22 @@
+apiVersion: v1
+data:
+    alertmanager.yaml: ENC[AES256_GCM,data:FkzHhsDV3NNzwruDKgHhoB4b3BledZ8nEmcQJ7oMfUlADxhsnJAclCZIKJakPo/TQPPiB8gKKgZ7jxL9JPKKHPxt2PIKZjaDUzeJyvW+Akxedte3Q9kQKN1JPHt2xSv0EH9iSOTrX+QXmHKU3O8nAijJ/CsVvn1yun0oAH87tS9Vgw7IZrR9SmLex6tWIl2w6KVvBSkeOC6ER3WtWVeXldK8t2eUfry9y+2nxLErI/Qf0U8NygvW7jk/tUBdC/6oELkLglLOmt1C2ygdKLLf4AFAj1K7uEgaPktMUko2OskS6FD9FXNjs1MtxUzduADH5Wn/qLxaiGHStg1j3lKK2gvK3lqSYY207POYuwd8ks4KlcG249gYgGpuuTKSBP85QyGd21PULg9GKFk05T2IJ6Ei5BxCRSVcr4PKjf3byQnN4pAdRsck8UtzZhBWEXz0/+I6rD0lxX48CGFAMqzELk7CLDfOtkv+T1H9HVEp8I8ocCD3vKQH6ToZVyKHHXnfGnVci/JBzkTKP5LMkWVTyPTttZPeqHTifGdaW6P/jJe3YMjR+MPNcitMPY2Fp8HrjEPREpkFPnm+xkgWCgTDWRvXKOeK8X0etwYR0Xb89Z0hS04KnZcIJ1bbPYLd6ZvH1cXH0BuAILFSgAVXmaHJ+/vsw6So3O1jtDMbSKq7Ue0Ld9GIL+lRsumEELyNK9x4O6Amd6vCTeM/Fe7WNzwYX84V5m5rbd6vuy0QleRs0VKzVCkS93tLPXmt7iqZAIwCGgYInsSJt+o4bHy/xAcvSG/DIohJyeXWrvEqjjLKPglbOfE9HSgpe6swDTk6SGaVnfpOMaJBz7iKTXwkdyqE26TmsKAm/MCCrDv08dTfZr4EEoLWoythHsSphjGkL1WpqjBa548eYzLt15z7I7luftOq1vIPslv8e8eXdg4IkhTcNCdqRKrbEB7yJcl4ddf/LST92RiSgk+Ug5nD8LarMzZ5exvbaxcW9q1WKF1ZWzh1E0z6cgU1AiDraDL+4LqApGV+AzP/FZjHNx4EupiNblaIa6UwmFJLsJP5jmDSy12vtxDX0dMsAzfXjVCWTTx7uleOgcNgXbi70ddbH76dFv6KPadE2WCj/l/tiWjl3lN3H21fsfKQj42B0Syy14/ODWVepuDHFbhfsgjXnbWj6NbqA525aBVJGHKIZIXA/NcUOhzIqsR1pFumYKZzV2FQGEhMRKTpYG118IF+LjEUGJ5iZxuTMqCWlvt3IPN3G+HyGThY73Td1+k6JmjjhHGj2Nk+wu8kSUIVQdEb,iv:CXzytoxctrrVrlIfa/oBoOUzyVX8uNO4uS1M5p/gtYk=,tag:9sE2SGh6UjkrN+MmRYqRvQ==,type:str]
+kind: Secret
+metadata:
+    name: alertmanager-config
+    namespace: monitoring
+sops:
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBHTm5mSG1nNmdWeXkwQ1FV
+            NjkyMlloTzQweG5VcEVEdzNpOFpyNCs4clFBCk51UXZpaXNhOFRHdzF1VXZSQ3JO
+            L0l0TnJGYUlFemVvUEFNNkVDYlNKcTAKLS0tIG0wZ0YvTllFSlVuZWJOeHExbGZK
+            ZFVHdXh1dWNCOHVkNFo4bUNhSmlYNXMKFUs9iJW2fJhdOwUBMFhP+wg0JMACS8/8
+            7pk/D+DeZ7YPsIYANDg6mUZeO6nA2W0sCqZi4fOyThKh/es1d1+ncw==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age1j3d5jayhztmyk9gmddp4dfxxwtspkmdephal3me69znayeugyyys9m7aa0
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-11-02T21:00:37Z"
+    mac: ENC[AES256_GCM,data:5g/KRDuv2eyXxSHokAJTTS9mohK/F84AljHg2glblmu1hJdiOIG30pmx1qH7O4FXGzeZFZKX77MzURoJNqrbPSHGetM29cu7dN3mZmpwQbuHKcTllHxmfWLb09AM18jROD2OREZ5/H0rSchiG3BPJn/s23NlaEGkd/EfVdrLGyE=,iv:YnAghSJRv6TmOPoC4Mig3jL6h4jltc9qA4Px60e6Ids=,tag:J2hHRzx4DtqMFQYWNFEPqg==,type:str]
+    version: 3.13.3

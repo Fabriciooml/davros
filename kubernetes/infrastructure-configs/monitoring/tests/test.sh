@@ -64,4 +64,10 @@ done
 missing_severity=$(echo "$rules" | yq e '[.spec.groups[].rules[] | select(.labels.severity == null)] | length' -)
 [ "$missing_severity" = "0" ] || { echo "FAIL: every rule needs a severity label for alert routing"; exit 1; }
 
+am_secret=$(echo "$built" | yq e 'select(.kind == "Secret" and .metadata.name == "alertmanager-config")' -)
+[ -n "$am_secret" ] || { echo "FAIL: no alertmanager-config secret found"; exit 1; }
+[ "$(echo "$am_secret" | yq e '.metadata.namespace' -)" = "monitoring" ] || { echo "FAIL: alertmanager-config must live in the monitoring namespace"; exit 1; }
+[ "$(echo "$am_secret" | yq e 'has("sops")' -)" = "true" ] || { echo "FAIL: alertmanager-config must be sops-encrypted, it holds the telegram token"; exit 1; }
+[ "$(echo "$am_secret" | yq e '.data | has("alertmanager.yaml")' -)" = "true" ] || { echo "FAIL: alertmanager-config must carry an alertmanager.yaml key"; exit 1; }
+
 echo "PASS"
