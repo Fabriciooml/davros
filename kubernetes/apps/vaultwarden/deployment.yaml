@@ -32,6 +32,8 @@ spec:
               value: /data
             - name: WEB_VAULT_ENABLED
               value: "true"
+            - name: SIGNUPS_ALLOWED
+              value: "false"
             - name: TZ
               value: America/Sao_Paulo
           ports:

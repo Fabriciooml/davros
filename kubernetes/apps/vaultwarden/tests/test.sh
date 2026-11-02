@@ -13,7 +13,7 @@ echo "$dep" | yq e '.spec.template.spec.containers[0].image' - | grep -Eq '^vaul
 [ "$(echo "$dep" | yq e '.spec.strategy.type' -)" = "Recreate" ] || { echo "FAIL: RWO volume needs Recreate"; exit 1; }
 [ "$(echo "$dep" | yq e '.spec.template.spec.enableServiceLinks' -)" = "false" ] || { echo "FAIL: service-link env vars must be off"; exit 1; }
 [ "$(echo "$dep" | yq e '.spec.replicas' -)" = "1" ] || { echo "FAIL: replicas must be 1 after cutover"; exit 1; }
-for kv in DOMAIN=https://vault.fabriciooml.dev ROCKET_PORT=8080 WEB_VAULT_ENABLED=true DATA_FOLDER=/data; do
+for kv in DOMAIN=https://vault.fabriciooml.dev ROCKET_PORT=8080 WEB_VAULT_ENABLED=true DATA_FOLDER=/data SIGNUPS_ALLOWED=false; do
   k=${kv%%=*}
   v=${kv#*=}
   [ "$(echo "$dep" | yq e ".spec.template.spec.containers[0].env[] | select(.name == \"$k\") | .value" -)" = "$v" ] || { echo "FAIL: $k must be $v"; exit 1; }
