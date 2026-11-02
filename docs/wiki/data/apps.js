@@ -2,6 +2,70 @@ window.WIKI_APPS = {
   "apps": [
     {
       "category": "media",
+      "description": "Request portal for audiobooks. Approved requests are searched and imported through Chaptarr.",
+      "hosts": [
+        {
+          "host": "audiobookrequest.local.<domain>",
+          "visibility": "lan"
+        }
+      ],
+      "images": [
+        {
+          "pinned": true,
+          "repo": "markbeep/audiobookrequest",
+          "tag": "1.11.0"
+        }
+      ],
+      "lan": true,
+      "name": "audiobookrequest",
+      "namespace": "arr",
+      "public": false,
+      "stateful": true,
+      "storage": [
+        {
+          "name": "audiobookrequest-config",
+          "size": "1Gi"
+        }
+      ]
+    },
+    {
+      "category": "media",
+      "description": "Audiobook library and player with progress sync. Reads the audiobooks Chaptarr imports.",
+      "hosts": [
+        {
+          "host": "audiobooks.<domain>",
+          "visibility": "public"
+        },
+        {
+          "host": "audiobookshelf.local.<domain>",
+          "visibility": "lan"
+        }
+      ],
+      "images": [
+        {
+          "pinned": true,
+          "repo": "ghcr.io/advplyr/audiobookshelf",
+          "tag": "2.37.2"
+        }
+      ],
+      "lan": true,
+      "name": "audiobookshelf",
+      "namespace": "audiobookshelf",
+      "public": true,
+      "stateful": true,
+      "storage": [
+        {
+          "name": "audiobookshelf-config",
+          "size": "1Gi"
+        },
+        {
+          "name": "audiobookshelf-metadata",
+          "size": "5Gi"
+        }
+      ]
+    },
+    {
+      "category": "media",
       "description": "Subtitle manager for Sonarr and Radarr libraries.",
       "hosts": [
         {
@@ -27,6 +91,52 @@ window.WIKI_APPS = {
           "size": "1Gi"
         }
       ]
+    },
+    {
+      "category": "media",
+      "description": "Readarr-style book manager (beta). Imports audiobooks for Audiobookshelf and hardlinks ebooks into the CWA ingest folder.",
+      "hosts": [
+        {
+          "host": "chaptarr.local.<domain>",
+          "visibility": "lan"
+        }
+      ],
+      "images": [
+        {
+          "pinned": true,
+          "repo": "chaptarr/chaptarr",
+          "tag": "0.9.965"
+        }
+      ],
+      "lan": true,
+      "name": "chaptarr",
+      "namespace": "arr",
+      "public": false,
+      "stateful": true,
+      "storage": [
+        {
+          "name": "chaptarr-config",
+          "size": "2Gi"
+        }
+      ]
+    },
+    {
+      "category": "apps",
+      "description": "Tunnel client exposing selected apps publicly.",
+      "hosts": [],
+      "images": [
+        {
+          "pinned": true,
+          "repo": "cloudflare/cloudflared",
+          "tag": "2026.2.0"
+        }
+      ],
+      "lan": false,
+      "name": "cloudflared",
+      "namespace": "cloudflared",
+      "public": false,
+      "stateful": false,
+      "storage": []
     },
     {
       "category": "own apps",
@@ -117,6 +227,38 @@ window.WIKI_APPS = {
     },
     {
       "category": "media",
+      "description": "Calibre-Web Automated: ebook library with OPDS and KOReader sync. Imports whatever lands in its ingest folder.",
+      "hosts": [
+        {
+          "host": "books.<domain>",
+          "visibility": "public"
+        },
+        {
+          "host": "cwa.local.<domain>",
+          "visibility": "lan"
+        }
+      ],
+      "images": [
+        {
+          "pinned": true,
+          "repo": "crocodilestick/calibre-web-automated",
+          "tag": "v4.0.8"
+        }
+      ],
+      "lan": true,
+      "name": "cwa",
+      "namespace": "cwa",
+      "public": true,
+      "stateful": true,
+      "storage": [
+        {
+          "name": "cwa-config",
+          "size": "2Gi"
+        }
+      ]
+    },
+    {
+      "category": "media",
       "description": "Cloudflare-challenge solver proxy used by Prowlarr.",
       "hosts": [],
       "images": [
@@ -132,6 +274,34 @@ window.WIKI_APPS = {
       "public": false,
       "stateful": false,
       "storage": []
+    },
+    {
+      "category": "media",
+      "description": "Media server for movies and shows with GPU transcoding.",
+      "hosts": [
+        {
+          "host": "jellyfin.local.<domain>",
+          "visibility": "lan"
+        }
+      ],
+      "images": [
+        {
+          "pinned": true,
+          "repo": "jellyfin/jellyfin",
+          "tag": "10.11.8"
+        }
+      ],
+      "lan": true,
+      "name": "jellyfin",
+      "namespace": "jellyfin",
+      "public": false,
+      "stateful": true,
+      "storage": [
+        {
+          "name": "jellyfin-config",
+          "size": "10Gi"
+        }
+      ]
     },
     {
       "category": "data",
@@ -283,6 +453,34 @@ window.WIKI_APPS = {
         {
           "name": "overseerr-config",
           "size": "1Gi"
+        }
+      ]
+    },
+    {
+      "category": "media",
+      "description": "Media server for movies and shows.",
+      "hosts": [
+        {
+          "host": "plex.local.<domain>",
+          "visibility": "lan"
+        }
+      ],
+      "images": [
+        {
+          "pinned": true,
+          "repo": "plexinc/pms-docker",
+          "tag": "1.43.0.10492-121068a07"
+        }
+      ],
+      "lan": true,
+      "name": "plex",
+      "namespace": "plex",
+      "public": false,
+      "stateful": true,
+      "storage": [
+        {
+          "name": "plex-config",
+          "size": "10Gi"
         }
       ]
     },
@@ -460,6 +658,38 @@ window.WIKI_APPS = {
         {
           "name": "sonarr-config",
           "size": "2Gi"
+        }
+      ]
+    },
+    {
+      "category": "apps",
+      "description": "Self-hosted Bitwarden-compatible password manager.",
+      "hosts": [
+        {
+          "host": "vault.<domain>",
+          "visibility": "public"
+        },
+        {
+          "host": "vault.local.<domain>",
+          "visibility": "lan"
+        }
+      ],
+      "images": [
+        {
+          "pinned": true,
+          "repo": "vaultwarden/server",
+          "tag": "1.37.4"
+        }
+      ],
+      "lan": true,
+      "name": "vaultwarden",
+      "namespace": "vaultwarden",
+      "public": true,
+      "stateful": true,
+      "storage": [
+        {
+          "name": "vaultwarden-data",
+          "size": "1Gi"
         }
       ]
     }

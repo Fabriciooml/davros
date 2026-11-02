@@ -1,0 +1,15 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: chaptarr
+  namespace: arr
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`chaptarr.local.fabriciooml.dev`)
+      kind: Rule
+      services:
+        - name: chaptarr
+          port: 8789
+  tls: {}

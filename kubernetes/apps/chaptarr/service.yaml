@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: chaptarr
+  namespace: arr
+spec:
+  selector:
+    app: chaptarr
+  ports:
+    - name: http
+      port: 8789
+      targetPort: 8789

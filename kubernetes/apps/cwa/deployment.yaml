@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cwa
+  namespace: cwa
+spec:
+  replicas: 1
+  progressDeadlineSeconds: 1200
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: cwa
+  template:
+    metadata:
+      labels:
+        app: cwa
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: cwa
+          image: crocodilestick/calibre-web-automated:v4.0.8@sha256:5e00373854247750cc3e4479b492ae09293ff5e06ed10177f226634d97888679
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: America/Sao_Paulo
+            - name: NETWORK_SHARE_MODE
+              value: "false"
+          ports:
+            - containerPort: 8083
+          readinessProbe:
+            tcpSocket:
+              port: 8083
+            periodSeconds: 15
+            timeoutSeconds: 10
+            failureThreshold: 30
+          livenessProbe:
+            tcpSocket:
+              port: 8083
+            initialDelaySeconds: 300
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 1536Mi
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: library
+              mountPath: /calibre-library
+            - name: ingest
+              mountPath: /cwa-book-ingest
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: cwa-config
+        - name: library
+          hostPath:
+            path: /mnt/pool-data/media/books
+            type: Directory
+        - name: ingest
+          hostPath:
+            path: /mnt/pool-data/media/books-ingest
+            type: Directory

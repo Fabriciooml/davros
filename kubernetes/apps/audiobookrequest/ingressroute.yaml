@@ -1,0 +1,15 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: audiobookrequest
+  namespace: arr
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`audiobookrequest.local.fabriciooml.dev`)
+      kind: Rule
+      services:
+        - name: audiobookrequest
+          port: 8000
+  tls: {}

@@ -1,0 +1,15 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: cwa
+  namespace: cwa
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`cwa.local.fabriciooml.dev`) || Host(`books.fabriciooml.dev`)
+      kind: Rule
+      services:
+        - name: cwa
+          port: 8083
+  tls: {}

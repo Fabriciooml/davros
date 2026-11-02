@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chaptarr
+  namespace: arr
+spec:
+  replicas: 1
+  progressDeadlineSeconds: 1200
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: chaptarr
+  template:
+    metadata:
+      labels:
+        app: chaptarr
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: chaptarr
+          image: chaptarr/chaptarr:0.9.965@sha256:bb00d67cbe1485d1cd61ef178362a29b42aa08f86b290841aab4b115ad2647a6
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: UMASK
+              value: "002"
+            - name: TZ
+              value: America/Sao_Paulo
+          ports:
+            - containerPort: 8789
+          readinessProbe:
+            tcpSocket:
+              port: 8789
+            periodSeconds: 15
+            timeoutSeconds: 10
+            failureThreshold: 30
+          livenessProbe:
+            tcpSocket:
+              port: 8789
+            initialDelaySeconds: 300
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 384Mi
+            limits:
+              memory: 1536Mi
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: data
+              mountPath: /data
+            - name: hooks
+              mountPath: /scripts
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: chaptarr-config
+        - name: data
+          hostPath:
+            path: /mnt/pool-data
+            type: Directory
+        - name: hooks
+          configMap:
+            name: chaptarr-hooks
+            defaultMode: 493
