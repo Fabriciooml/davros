@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - arr
   - bazarr
+  - cloudflared
   - comida
   - configarr
   - couchdb
