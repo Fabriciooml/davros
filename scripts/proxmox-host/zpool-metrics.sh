@@ -19,7 +19,7 @@ done <<<"$list"
 
 emit() { # metric, help, awk field holding the value, input rows
   printf '# HELP %s %s\n# TYPE %s gauge\n' "$1" "$2" "$1"
-  awk -v m="$1" -v f="$3" '{printf "%s{pool=\"%s\"} %s\n", m, $1, $f}' <<<"$4"
+  awk -v m="$1" -v f="$3" 'NF {printf "%s{pool=\"%s\"} %s\n", m, $1, $f}' <<<"$4"
 }
 
 {

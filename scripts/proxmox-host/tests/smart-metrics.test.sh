@@ -80,6 +80,11 @@ assert 'homelab_collector_last_success_timestamp_seconds{collector="smart"} 1000
 [ "$(stat -c %a "$prom")" = "644" ] || { echo "FAIL: smart.prom must be 0644"; exit 1; }
 [ "$(ls -A "$out")" = "smart.prom" ] || { echo "FAIL: no temp files may be left behind"; exit 1; }
 
+# well-formedness: node_exporter rejects the whole file on one malformed line
+bad=$(grep -vE '^#|^$' "$prom" | grep -vE '^[a-z_][a-z0-9_]*\{[^}]*\} [^ ]+$' || true)
+[ -z "$bad" ] || { echo "FAIL: malformed sample line(s):"; echo "$bad"; exit 1; }
+! grep -qx '' "$prom" || { echo "FAIL: empty line(s) in smart.prom"; exit 1; }
+
 # cron runs with PATH=/usr/bin:/bin, so the collector must append the sbin dirs itself (append keeps test stubs first)
 grep -qF 'export PATH="$PATH:/usr/local/sbin:/usr/sbin:/sbin"' "$script" || { echo "FAIL: collector must append sbin dirs to PATH for cron"; exit 1; }
 

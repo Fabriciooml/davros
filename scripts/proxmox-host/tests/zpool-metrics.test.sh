@@ -34,6 +34,12 @@ assert '# TYPE homelab_zpool_size_bytes gauge'
 [ "$(stat -c %a "$prom")" = "644" ] || { echo "FAIL: zpool.prom must be world-readable (0644) for node_exporter"; exit 1; }
 [ "$(ls -A "$out")" = "zpool.prom" ] || { echo "FAIL: no temp files may be left behind"; exit 1; }
 
+# well-formedness: node_exporter rejects the whole file on one malformed line
+! grep -qF 'pool=""' "$prom" || { echo "FAIL: line with empty pool label:"; grep -nF 'pool=""' "$prom"; exit 1; }
+bad=$(grep -vE '^#|^$' "$prom" | grep -vE '^[a-z_][a-z0-9_]*\{[^}]*\} [^ ]+$' || true)
+[ -z "$bad" ] || { echo "FAIL: malformed sample line(s):"; echo "$bad"; exit 1; }
+! grep -qx '' "$prom" || { echo "FAIL: empty line(s) in zpool.prom"; exit 1; }
+
 # a failing zpool must leave the previous file untouched and exit non-zero
 before=$(cat "$prom")
 printf '#!/usr/bin/env bash\nexit 1\n' > "$stub/zpool"
