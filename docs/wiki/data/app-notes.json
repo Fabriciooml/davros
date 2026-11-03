@@ -2,7 +2,7 @@
   "audiobookrequest": {"category": "media", "description": "Request portal for audiobooks. Approved requests are searched and imported through Chaptarr."},
   "audiobookshelf": {"category": "media", "description": "Audiobook library and player with progress sync. Reads the audiobooks Chaptarr imports."},
   "bazarr": {"category": "media", "description": "Subtitle manager for Sonarr and Radarr libraries."},
-  "chaptarr": {"category": "media", "description": "Readarr-style book manager (beta). Imports audiobooks for Audiobookshelf and hardlinks ebooks into the CWA ingest folder."},
+  "chaptarr": {"category": "media", "description": "Readarr-style book manager (beta). Searches through Prowlarr, downloads with qBittorrent, imports audiobooks for Audiobookshelf and hardlinks ebooks into the CWA ingest folder."},
   "cloudflared": {"category": "apps", "description": "Tunnel client exposing selected apps publicly."},
   "comida": {"category": "own apps", "description": "Comida di Buteco tracker. Own app; follows new image builds automatically."},
   "configarr": {"category": "media", "description": "Syncs quality profiles and custom formats into Sonarr and Radarr on a schedule."},

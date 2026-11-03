@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Davros Architecture</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="architecture">
+<svg class="diagram-defs" aria-hidden="true" focusable="false">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#33e1ff"/></marker>
+    <marker id="arrow-pub" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#e6b25c"/></marker>
+    <marker id="arrow-mute" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#8a96a2"/></marker>
+  </defs>
+</svg>
+<main>
+  <section class="section">
+    <h2>Architecture</h2>
+    <p>Two tools, one boundary. <strong>OpenTofu</strong> builds what exists before the cluster does (the LXC node, k3s, Cloudflare DNS and tunnel rules). <strong>Flux</strong> owns everything inside the cluster and reconciles it from this repo. Nothing in <code>kubernetes/</code> is applied by hand.</p>
+  </section>
+
+  <section class="section">
+    <h2>Platform graph</h2>
+    <p>Who builds, who deploys, who talks to whom.</p>
+    <div class="diagram-wrap">
+    <svg class="diagram" viewBox="0 0 1040 580" role="img" aria-label="Platform component graph. Operator runs OpenTofu, which creates the Proxmox LXC running k3s and writes Cloudflare DNS and tunnel rules. Inside k3s, Flux pulls the git repo and applies infrastructure, then infrastructure-configs, then apps. An age key lets Flux decrypt secrets. cert-manager issues certificates to Traefik. Cloudflare sends public traffic through cloudflared to Traefik, which routes to apps. Prometheus scrapes apps and alerts Telegram.">
+      <rect class="box" x="210" y="130" width="640" height="410" rx="14"/>
+      <text class="title" x="228" y="152">K3S NODE</text>
+
+      <rect class="node" x="30" y="50" width="130" height="48" rx="10"/>
+      <text x="95" y="79">Operator</text>
+      <rect class="node hot" x="240" y="50" width="130" height="48" rx="10"/>
+      <text x="305" y="79">OpenTofu</text>
+      <rect class="node" x="450" y="50" width="170" height="48" rx="10"/>
+      <text x="535" y="70">Proxmox LXC</text>
+      <text class="sub" x="535" y="87">privileged container</text>
+      <rect class="node" x="880" y="50" width="130" height="48" rx="10"/>
+      <text x="945" y="70">Cloudflare</text>
+      <text class="sub" x="945" y="87">DNS + tunnel</text>
+
+      <path class="edge" d="M160 74H240"/>
+      <path class="edge" d="M370 74H450"/>
+      <path class="edge" d="M305 50V26H945V50"/>
+      <path class="edge" d="M535 98V130"/>
+      <text class="label" x="378" y="66">creates</text>
+      <text class="label" x="545" y="120">runs</text>
+      <text class="label" x="560" y="20">DNS records + tunnel rules</text>
+
+      <rect class="node" x="30" y="175" width="130" height="50" rx="10"/>
+      <text x="95" y="205">Git repo</text>
+      <rect class="node hot" x="240" y="175" width="110" height="50" rx="10"/>
+      <text x="295" y="205">Flux</text>
+      <rect class="node" x="380" y="175" width="135" height="50" rx="10"/>
+      <text x="447" y="205">infrastructure</text>
+      <rect class="node" x="545" y="175" width="130" height="50" rx="10"/>
+      <text x="610" y="205">infra-configs</text>
+      <rect class="node" x="705" y="175" width="110" height="50" rx="10"/>
+      <text x="760" y="205">apps</text>
+      <rect class="node dim" x="240" y="255" width="110" height="44" rx="10"/>
+      <text x="295" y="282">age key</text>
+
+      <path class="edge git" d="M160 200H240"/>
+      <path class="edge" d="M350 200H380"/>
+      <path class="edge" d="M515 200H545"/>
+      <path class="edge" d="M675 200H705"/>
+      <path class="edge git" d="M295 255V225"/>
+      <text class="label" x="172" y="192">pull</text>
+      <text class="label" x="395" y="167">dependsOn chain</text>
+      <text class="label" x="303" y="244">decrypt</text>
+
+      <rect class="node" x="240" y="345" width="130" height="50" rx="10"/>
+      <text x="305" y="375">cert-manager</text>
+      <rect class="node hot" x="440" y="345" width="130" height="50" rx="10"/>
+      <text x="505" y="375">Traefik</text>
+      <rect class="node" x="640" y="345" width="130" height="50" rx="10"/>
+      <text x="705" y="375">cloudflared</text>
+
+      <path class="edge" d="M370 370H440"/>
+      <path class="edge pub" d="M640 370H570"/>
+      <path class="edge pub" d="M945 98V370H770"/>
+      <text class="label" x="384" y="362">certs</text>
+      <text class="label" x="582" y="362">origin</text>
+      <text class="label" x="953" y="240">public</text>
+
+      <rect class="node" x="240" y="465" width="130" height="56" rx="10"/>
+      <text x="305" y="489">Prometheus</text>
+      <text class="sub" x="305" y="507">+ Alertmanager</text>
+      <rect class="node hot" x="440" y="465" width="130" height="50" rx="10"/>
+      <text x="505" y="495">apps</text>
+      <rect class="node" x="30" y="465" width="130" height="50" rx="10"/>
+      <text x="95" y="495">Telegram</text>
+
+      <path class="edge" d="M505 395V465"/>
+      <path class="edge" d="M370 493H440"/>
+      <path class="edge" d="M240 493H160"/>
+      <text class="label" x="513" y="436">routes</text>
+      <text class="label" x="380" y="485">scrape</text>
+      <text class="label" x="170" y="485">alerts</text>
+    </svg>
+    </div>
+    <div class="legend"><span><i></i>runtime / control</span><span><i class="pub"></i>public traffic</span><span><i class="git"></i>git and secrets</span></div>
+    <p>Reading it: <code>make apply-cluster</code> and <code>make apply-cloudflare</code> run OpenTofu from the operator's machine. Everything under the dashed K3S box is Flux's. Let's Encrypt certificates are issued by cert-manager using DNS-01 against Cloudflare, so no inbound port is needed. Prometheus also scrapes the Proxmox host's exporters (disks, ZFS pool).</p>
+  </section>
+
+  <section class="section">
+    <h2>Flux order</h2>
+    <p>Three Flux Kustomizations, chained with <code>dependsOn</code>, each decrypting SOPS files with the <code>sops-age</code> secret:</p>
+    <ol>
+      <li><code>infrastructure</code>: HelmRepositories and HelmReleases (cert-manager, Traefik, monitoring) plus local-path-provisioner and the custom CoreDNS config.</li>
+      <li><code>infrastructure-configs</code>: custom resources that only exist once the charts are installed (ClusterIssuers, Certificates, TLSStore, monitoring routes and alerts, legacy routes, image automation).</li>
+      <li><code>apps</code>: one directory per workload under <code>kubernetes/apps/</code>.</li>
+    </ol>
+    <p>The split exists because a custom resource cannot apply before its CRD does. Charts first, their resources second, workloads last.</p>
+  </section>
+
+  <section class="section">
+    <h2>App dependency graph</h2>
+    <p>How the media stack fits together. Solid arrows are one app calling another, set up inside each app. Dashed arrows are hand-offs through a shared folder: the finished file lands on disk and the next app picks it up.</p>
+    <div class="diagram-wrap">
+    <svg class="diagram" viewBox="0 0 1000 560" role="img" aria-label="Media stack graph. Overseerr, Configarr and Bazarr connect to Sonarr and Radarr. AudioBookRequest connects to Chaptarr. Sonarr, Radarr and Chaptarr all download with qBittorrent and search through Prowlarr, which FlareSolverr helps. Sonarr and Radarr hand finished files to Jellyfin and Plex through a shared folder. Chaptarr hands audiobooks to Audiobookshelf and ebooks to Calibre-Web Automated the same way.">
+      <rect class="node" x="20" y="40" width="150" height="50" rx="10"/>
+      <text x="95" y="63">Overseerr</text>
+      <text class="sub" x="95" y="80">movie + tv requests</text>
+      <rect class="node" x="20" y="110" width="150" height="50" rx="10"/>
+      <text x="95" y="133">Configarr</text>
+      <text class="sub" x="95" y="150">quality profiles</text>
+      <rect class="node" x="20" y="180" width="150" height="50" rx="10"/>
+      <text x="95" y="210">Bazarr</text>
+      <rect class="node" x="20" y="400" width="150" height="60" rx="10"/>
+      <text x="95" y="425">AudioBookRequest</text>
+      <text class="sub" x="95" y="443">audiobook requests</text>
+
+      <rect class="node hot" x="300" y="40" width="160" height="180" rx="10"/>
+      <text x="380" y="125">Sonarr</text>
+      <text x="380" y="145">Radarr</text>
+      <rect class="node" x="300" y="290" width="160" height="50" rx="10"/>
+      <text x="380" y="320">qBittorrent</text>
+      <rect class="node hot" x="300" y="400" width="160" height="80" rx="10"/>
+      <text x="380" y="445">Chaptarr</text>
+
+      <rect class="node" x="580" y="290" width="130" height="50" rx="10"/>
+      <text x="645" y="320">Prowlarr</text>
+      <rect class="node dim" x="820" y="290" width="150" height="50" rx="10"/>
+      <text x="895" y="320">FlareSolverr</text>
+
+      <rect class="node" x="820" y="40" width="150" height="50" rx="10"/>
+      <text x="895" y="63">Jellyfin</text>
+      <text class="sub" x="895" y="80">tv + movies</text>
+      <rect class="node" x="820" y="110" width="150" height="50" rx="10"/>
+      <text x="895" y="133">Plex</text>
+      <text class="sub" x="895" y="150">tv + movies</text>
+      <rect class="node" x="820" y="400" width="150" height="50" rx="10"/>
+      <text x="895" y="423">Audiobookshelf</text>
+      <text class="sub" x="895" y="440">audiobooks</text>
+      <rect class="node" x="820" y="470" width="150" height="50" rx="10"/>
+      <text x="895" y="493">CWA</text>
+      <text class="sub" x="895" y="510">ebooks (ingest)</text>
+
+      <path class="edge" d="M170 65H235V80H300"/>
+      <path class="edge" d="M170 135H300"/>
+      <path class="edge" d="M170 205H235V190H300"/>
+      <path class="edge" d="M170 430H300"/>
+
+      <path class="edge" d="M380 220V290"/>
+      <path class="edge" d="M380 400V340"/>
+
+      <path class="edge" d="M580 300H520V160H460"/>
+      <path class="edge" d="M580 330H520V420H460"/>
+      <path class="edge" d="M820 315H710"/>
+
+      <path class="edge git" d="M460 65H820"/>
+      <path class="edge git" d="M460 100H760V135H820"/>
+      <path class="edge git" d="M460 440H820"/>
+      <path class="edge git" d="M460 465H760V495H820"/>
+
+      <text class="label" x="388" y="262">download</text>
+      <text class="label" x="388" y="377">download</text>
+      <text class="label" x="530" y="55">shared folder</text>
+      <text class="label" x="530" y="432">shared folder</text>
+      <text class="label" x="738" y="308">solver</text>
+      <text class="label" x="528" y="240">search</text>
+    </svg>
+    </div>
+    <div class="legend"><span><i></i>app calls app</span><span><i class="git"></i>hand-off via shared folder</span></div>
+    <p>Sonarr and Radarr share one node because their wiring is identical. Prowlarr feeds all three managers; qBittorrent downloads for all three.</p>
+    <p>Shared folders are host paths under <code>/mnt/pool-data</code>, mounted into pods with <code>hostPath</code>. Because every app sees the same filesystem, imports are hardlinks, not copies:</p>
+    <ul>
+      <li>Sonarr, Radarr, Chaptarr: the whole pool.</li>
+      <li>qBittorrent: <code>torrents/</code>.</li>
+      <li>Jellyfin, Plex: <code>media/tv</code> and <code>media/movies</code>. Bazarr: <code>media/</code>.</li>
+      <li>Audiobookshelf: <code>media/audiobooks</code>. CWA: <code>media/books</code> and <code>media/books-ingest</code>, where Chaptarr hardlinks ebooks.</li>
+    </ul>
+
+    <h3>Data services and own apps</h3>
+    <p>Services other apps lean on, in-cluster. samsa and muad-dib (both own apps) use Kafka for events and PostgreSQL for their data. nosso-mapa and comida-di-buteco keep theirs in SQLite files on local-path volumes, so they do not depend on PostgreSQL.</p>
+    <div class="diagram-wrap">
+    <svg class="diagram" viewBox="0 0 900 560" role="img" aria-label="Data services. samsa and muad-dib connect to both Kafka and PostgreSQL. Kafka UI connects to Kafka. pgAdmin connects to PostgreSQL. Obsidian clients sync through CouchDB. nosso-mapa frontend calls its backend, which stores data in SQLite and calls the Google Places API. comida stores data in SQLite.">
+      <rect class="node hot" x="30" y="60" width="170" height="110" rx="10"/>
+      <text x="115" y="106">Kafka</text>
+      <text class="sub" x="115" y="126">single broker</text>
+      <text class="sub" x="115" y="142">kafka.kafka.svc:9092</text>
+      <rect class="node dim" x="330" y="60" width="130" height="50" rx="10"/>
+      <text x="395" y="83">samsa</text>
+      <text class="sub" x="395" y="100">own app</text>
+      <rect class="node dim" x="330" y="120" width="130" height="50" rx="10"/>
+      <text x="395" y="143">muad-dib</text>
+      <text class="sub" x="395" y="160">own app</text>
+      <rect class="node hot" x="590" y="60" width="200" height="110" rx="10"/>
+      <text x="690" y="106">PostgreSQL</text>
+      <text class="sub" x="690" y="126">v16</text>
+      <text class="sub" x="690" y="142">postgres.postgres.svc</text>
+
+      <rect class="node" x="30" y="240" width="170" height="50" rx="10"/>
+      <text x="115" y="270">Kafka UI</text>
+      <rect class="node" x="590" y="240" width="200" height="50" rx="10"/>
+      <text x="690" y="270">pgAdmin</text>
+
+      <path class="edge" d="M330 85H200"/>
+      <path class="edge" d="M330 145H200"/>
+      <path class="edge" d="M460 85H590"/>
+      <path class="edge" d="M460 145H590"/>
+      <path class="edge" d="M115 240V170"/>
+      <path class="edge" d="M690 240V170"/>
+      <text class="label" x="238" y="77">events</text>
+      <text class="label" x="498" y="77">data</text>
+
+      <rect class="node dim" x="330" y="310" width="130" height="44" rx="10"/>
+      <text x="395" y="330">Obsidian</text>
+      <text class="sub" x="395" y="346">LiveSync clients</text>
+      <rect class="node hot" x="590" y="310" width="200" height="44" rx="10"/>
+      <text x="690" y="337">CouchDB</text>
+      <path class="edge" d="M460 332H590"/>
+
+      <text class="title" x="30" y="392">OWN APPS WITH SQLITE ON A PVC</text>
+      <rect class="node dim" x="30" y="410" width="150" height="50" rx="10"/>
+      <text x="105" y="433">nosso-mapa</text>
+      <text class="sub" x="105" y="450">frontend</text>
+      <rect class="node dim" x="270" y="410" width="150" height="50" rx="10"/>
+      <text x="345" y="433">nosso-mapa</text>
+      <text class="sub" x="345" y="450">backend</text>
+      <rect class="node" x="510" y="410" width="130" height="50" rx="10"/>
+      <text x="575" y="433">SQLite</text>
+      <text class="sub" x="575" y="450">mapa-data PVC</text>
+      <rect class="node dim" x="270" y="490" width="150" height="44" rx="10"/>
+      <text x="345" y="510">Google Places</text>
+      <text class="sub" x="345" y="526">external API</text>
+      <rect class="node dim" x="700" y="410" width="150" height="50" rx="10"/>
+      <text x="775" y="433">comida</text>
+      <text class="sub" x="775" y="450">own app</text>
+      <rect class="node" x="700" y="490" width="150" height="44" rx="10"/>
+      <text x="775" y="510">SQLite</text>
+      <text class="sub" x="775" y="526">comida-data PVC</text>
+
+      <path class="edge" d="M180 435H270"/>
+      <path class="edge" d="M420 435H510"/>
+      <path class="edge" d="M345 460V490"/>
+      <path class="edge" d="M775 460V490"/>
+      <text class="label" x="205" y="427">api</text>
+    </svg>
+    </div>
+    <p>PostgreSQL, Kafka and CouchDB each keep their data on a local-path PVC. Kafka also advertises an external listener for clients outside the cluster.</p>
+  </section>
+
+  <section class="section">
+    <h2>Secrets</h2>
+    <p>The repo is public. Secret values are committed only as <code>*.sops.yaml</code>, encrypted to an age key. The private key lives outside git; <code>make sops-age-secret</code> delivers it into the <code>flux-system</code> namespace so Flux can decrypt. Lose the key and the committed secrets become unreadable, so back it up. See the <a href="runbooks.html">runbooks</a> for editing and rotating.</p>
+  </section>
+
+  <section class="section">
+    <h2>Image updates</h2>
+    <p>Third-party images are pinned by tag and digest, so upgrades are explicit commits. Own apps (samsa, muad-dib, mapa, comida) follow new builds: Flux image automation watches the registry and pushes the new tag to <code>main</code> as a <code>chore(images)</code> commit.</p>
+  </section>
+
+  <section class="section">
+    <h2>Testing</h2>
+    <p>Every kustomization directory has a <code>tests/test.sh</code> (kubeconform plus <code>yq</code> assertions); Terraform roots have <code>tofu test</code>. <code>make test</code> runs everything without touching real infrastructure.</p>
+  </section>
+</main>
+<script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Davros Network</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="network">
+<svg class="diagram-defs" aria-hidden="true" focusable="false">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#33e1ff"/></marker>
+    <marker id="arrow-pub" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#e6b25c"/></marker>
+    <marker id="arrow-mute" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#8a96a2"/></marker>
+  </defs>
+</svg>
+<main>
+  <section class="section">
+    <h2>Network and DNS</h2>
+    <p>Every app has a LAN name, <code>&lt;app&gt;.local.&lt;domain&gt;</code>. A few also get a public name, <code>&lt;app&gt;.&lt;domain&gt;</code>. Both end at the same Traefik; they differ in how the request gets there. Throughout this page <code>&lt;domain&gt;</code> stands for the real domain, which is not written in the wiki.</p>
+  </section>
+
+  <section class="section">
+    <h2>Request paths</h2>
+    <div class="diagram-wrap">
+    <svg class="diagram" viewBox="0 0 900 460" role="img" aria-label="Two request paths. LAN: a device asks Pi-hole for a local name, then connects to Traefik over HTTPS. Public: an internet client reaches Cloudflare, which forwards through the tunnel to cloudflared in the cluster, then to Traefik. Traefik routes to apps and to legacy LAN hosts.">
+      <rect class="box" x="470" y="120" width="400" height="310" rx="14"/>
+      <text class="title" x="488" y="144">K3S NODE</text>
+
+      <rect class="node" x="30" y="50" width="130" height="48" rx="10"/>
+      <text x="95" y="79">LAN device</text>
+      <rect class="node dim" x="230" y="50" width="130" height="48" rx="10"/>
+      <text x="295" y="70">Pi-hole</text>
+      <text class="sub" x="295" y="87">LAN DNS</text>
+      <path class="edge git" d="M160 74H230"/>
+      <text class="label" x="172" y="66">DNS</text>
+
+      <rect class="node" x="30" y="330" width="130" height="48" rx="10"/>
+      <text x="95" y="359">Internet client</text>
+      <rect class="node" x="230" y="330" width="150" height="48" rx="10"/>
+      <text x="305" y="350">Cloudflare</text>
+      <text class="sub" x="305" y="367">proxied CNAME</text>
+      <path class="edge pub" d="M160 354H230"/>
+      <text class="label" x="168" y="346">DNS + TLS</text>
+
+      <rect class="node hot" x="500" y="215" width="130" height="50" rx="10"/>
+      <text x="565" y="245">Traefik</text>
+      <rect class="node" x="500" y="340" width="130" height="50" rx="10"/>
+      <text x="565" y="370">cloudflared</text>
+      <rect class="node hot" x="720" y="160" width="130" height="50" rx="10"/>
+      <text x="785" y="190">k8s apps</text>
+      <rect class="node dim" x="720" y="275" width="130" height="64" rx="10"/>
+      <text x="785" y="299">legacy hosts</text>
+      <text class="sub" x="785" y="316">Proxmox, HAOS,</text>
+      <text class="sub" x="785" y="330">Pi-hole, Plex...</text>
+
+      <path class="edge" d="M95 98V240H500"/>
+      <path class="edge pub" d="M380 354H500"/>
+      <path class="edge pub" d="M565 340V265"/>
+      <path class="edge" d="M630 230H675V185H720"/>
+      <path class="edge" d="M630 250H675V307H720"/>
+
+      <text class="label" x="104" y="232">HTTPS *.local</text>
+      <text class="label" x="400" y="346">tunnel</text>
+      <text class="label" x="573" y="310">origin</text>
+    </svg>
+    </div>
+    <div class="legend"><span><i></i>LAN request</span><span><i class="pub"></i>public request</span><span><i class="git"></i>DNS lookup</span></div>
+    <ul>
+      <li><strong>LAN:</strong> the device asks Pi-hole to resolve <code>&lt;app&gt;.local.&lt;domain&gt;</code>, then speaks HTTPS to Traefik directly. Pi-hole's records live on the Pi-hole itself, not in this repo.</li>
+      <li><strong>Public:</strong> the name is a proxied Cloudflare CNAME to the tunnel. <code>cloudflared</code> inside the cluster dials <em>out</em> to Cloudflare and carries requests back in, so the router has no inbound port open.</li>
+      <li>Both paths land on the same Traefik <code>websecure</code> entrypoint and the same IngressRoute. One route can match both hosts.</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <h2>Names and certificates</h2>
+    <div class="grid">
+      <div class="card"><h3>Local name</h3><p><code>&lt;app&gt;.local.&lt;domain&gt;</code>: LAN only, never published to Cloudflare. Covered by the <code>local-wildcard</code> certificate.</p></div>
+      <div class="card"><h3>Public name</h3><p><code>&lt;app&gt;.&lt;domain&gt;</code>: a Cloudflare CNAME to the tunnel plus an ingress rule. Covered by the <code>public-wildcard</code> certificate.</p></div>
+    </div>
+    <p>cert-manager issues both wildcards from Let's Encrypt with DNS-01 challenges, solved through the Cloudflare API token kept in a SOPS secret. DNS-01 needs no inbound port, which is why the LAN wildcard can be trusted even though it is never reachable from outside. Traefik's default <code>TLSStore</code> serves the local wildcard and also offers the public one, so routes only need <code>tls: {}</code>.</p>
+  </section>
+
+  <section class="section">
+    <h2>DNS inside the cluster</h2>
+    <p>Pods use CoreDNS. A small <code>coredns-custom</code> config adds two rules for the domain:</p>
+    <ul>
+      <li><code>*.local.&lt;domain&gt;</code> and <code>&lt;domain&gt;</code> are forwarded to the node's own resolvers, so pods can reach LAN and public names the same way devices do.</li>
+      <li>Search-path junk such as <code>cluster.local.&lt;domain&gt;</code> and any name with extra labels under the domain answers <strong>NXDOMAIN</strong>. An empty NOERROR would make musl-based images stop trying their remaining search domains.</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <h2>Public exposure</h2>
+    <p>Terraform owns the public side. The <code>public_apps</code> map in <code>terraform/cloudflare/terraform.tfvars</code> (git-ignored) lists each public app. For every entry the <code>public-app-ingress</code> module creates one proxied CNAME and one tunnel ingress rule, and the root config appends a catch-all that returns 404. A hostname that is not in the map goes nowhere, even if the Kubernetes route exists.</p>
+  </section>
+
+  <section class="section">
+    <h2>Legacy routes</h2>
+    <p>Some things on the LAN are not in Kubernetes but should share the same names and certificates: Proxmox, Home Assistant, Pi-hole, Portainer, Plex. Each gets a Service and EndpointSlice pointing at the machine's LAN address, plus an IngressRoute, under <code>infrastructure-configs/legacy-routes</code>. Backends that speak HTTPS with a self-signed certificate use the shared <code>insecure-skip-verify</code> ServersTransport.</p>
+  </section>
+
+  <section class="section">
+    <h2>Expose an app</h2>
+    <details id="lan-only">
+      <summary>LAN only</summary>
+      <p>Add an IngressRoute with a single host. Nothing else is needed.</p>
+<pre><code>entryPoints: [websecure]
+routes:
+  - kind: Rule
+    match: Host(`&lt;app&gt;.local.&lt;domain&gt;`)
+    services:
+      - name: &lt;app&gt;
+        port: &lt;port&gt;
+tls: {}</code></pre>
+      <p>Add a record for the name on the Pi-hole if it does not already resolve (REAL, outside this repo).</p>
+    </details>
+    <details id="public">
+      <summary>Public</summary>
+      <ol>
+        <li>Add <code>|| Host(`&lt;app&gt;.&lt;domain&gt;`)</code> to the route's <code>match</code>.</li>
+        <li>Add the app to <code>public_apps</code> in <code>terraform.tfvars</code> with its <code>target_url</code>.</li>
+        <li>Run <code>make apply-cloudflare</code> (REAL).</li>
+        <li>Verify against a public resolver, not the Pi-hole.</li>
+      </ol>
+<pre><code>dig +short &lt;app&gt;.&lt;domain&gt; @1.1.1.1
+dig +short &lt;app&gt;.&lt;domain&gt; @&lt;pihole-ip&gt;</code></pre>
+      <p><strong>Gotcha:</strong> if the public resolver answers but the Pi-hole returns nothing, the Pi-hole cached the earlier empty answer. LAN devices fail until its DNS cache is flushed. Flush the device's cache or toggle its Wi-Fi after that.</p>
+    </details>
+  </section>
+</main>
+<script src="js/app.js"></script>
+</body>
+</html>

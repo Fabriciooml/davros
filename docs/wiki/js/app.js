@@ -4,6 +4,8 @@
   var NAV = [
     ["index.html", "/overview"],
     ["apps.html", "/apps"],
+    ["architecture.html", "/architecture"],
+    ["network.html", "/network"],
     ["runbooks.html", "/runbooks"]
   ];
 

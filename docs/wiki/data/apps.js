@@ -94,7 +94,7 @@ window.WIKI_APPS = {
     },
     {
       "category": "media",
-      "description": "Readarr-style book manager (beta). Imports audiobooks for Audiobookshelf and hardlinks ebooks into the CWA ingest folder.",
+      "description": "Readarr-style book manager (beta). Searches through Prowlarr, downloads with qBittorrent, imports audiobooks for Audiobookshelf and hardlinks ebooks into the CWA ingest folder.",
       "hosts": [
         {
           "host": "chaptarr.local.<domain>",
