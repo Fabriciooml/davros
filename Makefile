@@ -4,7 +4,7 @@ SHELL := /bin/bash
 -include .env
 export
 
-TF_ROOTS := terraform/k3s-cluster terraform/cloudflare
+TF_ROOTS := terraform/k3s-cluster terraform/cloudflare terraform/ts-router
 AGE_KEY_FILE ?= $(HOME)/.config/sops/age/keys.txt
 
 .PHONY: help
@@ -53,7 +53,7 @@ validate: ## tofu validate every terraform root and module
 	done
 
 .PHONY: init
-init: ## tofu init the two deployable roots (k3s-cluster, cloudflare)
+init: ## tofu init every deployable root
 	@for dir in $(TF_ROOTS); do \
 		(cd "$$dir" && tofu init); \
 	done
@@ -86,6 +86,16 @@ plan-cloudflare: ## show what applying the cloudflare config would change, no re
 apply-cloudflare: ## create/update cloudflare dns records and tunnel ingress rules -- REAL CHANGE
 	$(MAKE) confirm MSG="about to change DNS records and tunnel ingress rules on cloudflare."
 	cd terraform/cloudflare && tofu apply
+
+.PHONY: plan-vpn
+plan-vpn: ## show what applying the tailscale subnet router lxc would change, no real infra touched
+	cd terraform/ts-router && tofu plan
+
+.PHONY: apply-vpn
+apply-vpn: ## create the ts-router lxc on proxmox and join it to the tailnet -- REAL CHANGE (needs TS_AUTHKEY)
+	@[ -n "$${TS_AUTHKEY:-}" ] || { echo "TS_AUTHKEY is not set: generate a one-time auth key in the Tailscale admin console and export it or put it in .env"; exit 1; }
+	$(MAKE) confirm MSG="about to create the ts-router lxc on your proxmox host and join it to your tailnet."
+	cd terraform/ts-router && tofu apply
 
 .PHONY: kubeconfig
 kubeconfig: ## merge the k3s-cluster-generated kubeconfig into ~/.kube/config

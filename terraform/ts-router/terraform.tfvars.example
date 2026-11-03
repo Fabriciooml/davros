@@ -1,0 +1,5 @@
+proxmox_host = ""
+datastore_id = ""
+vm_id        = <vm id>
+node_ip      = ""
+gateway      = ""

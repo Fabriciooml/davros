@@ -98,6 +98,39 @@ kubectl -n &lt;namespace&gt; scale deploy/&lt;app&gt; --replicas=&lt;replicas&gt
 flux resume kustomization apps</code></pre>
       <p>Check the app's logs after it comes up before trusting the restore. Once the app is verified, delete <code>&lt;pvc-dir&gt;.bak</code> (it is also picked up by the nightly backup).</p>
     </details>
+
+    <details id="vpn">
+      <summary>Remote access (Tailscale)</summary>
+      <p>The <code>ts-router</code> LXC advertises the LAN to the tailnet. The auth key is passed through the environment and never stored in the repo.</p>
+      <ol>
+        <li>Check that 2FA is enabled on the Tailscale sign-in.</li>
+        <li>In the Tailscale admin console, generate a one-time, non-reusable auth key.</li>
+        <li>Export the key (or put it in <code>.env</code>) and apply (REAL): it creates the LXC on Proxmox and joins it to the tailnet.</li>
+        <li>In the admin console, approve the advertised route <code>192.168.31.0/24</code> for <code>ts-router</code>.</li>
+        <li>Disable key expiry for <code>ts-router</code>.</li>
+        <li>Add split DNS: nameserver <code>192.168.31.152</code> (Pi-hole) for the domain <code>local.&lt;domain&gt;</code>.</li>
+        <li>On each client, enable "use Tailscale subnets".</li>
+      </ol>
+<pre><code>make plan-vpn                 # no real infra touched
+export TS_AUTHKEY=&lt;one-time auth key&gt;
+make apply-vpn                # REAL CHANGE</code></pre>
+      <p><strong>Verify</strong> from a phone on mobile data:</p>
+      <ol>
+        <li>Ping <code>192.168.31.152</code>.</li>
+        <li>Open Proxmox by IP.</li>
+        <li>Open Home Assistant.</li>
+        <li>Resolve and open <code>&lt;app&gt;.local.&lt;domain&gt;</code>.</li>
+        <li>Stop the k3s LXC and confirm Proxmox is still reachable over the VPN.</li>
+      </ol>
+      <p><strong>Troubleshooting:</strong></p>
+      <ul>
+        <li>If <code>pct start</code> fails or the tun device is missing on the host, run this on the Proxmox host, then start the container.
+<pre><code>modprobe tun &amp;&amp; echo tun &gt; /etc/modules-load.d/tun.conf
+pct start &lt;id&gt;</code></pre></li>
+        <li>If <code>tailscaled</code> logs <code>permission denied</code> on <code>/dev/net/tun</code>, run <code>ls -l /dev/net/tun</code> on the Proxmox host. Expect <code>crw-rw-rw-</code>; otherwise run <code>chmod 666 /dev/net/tun</code>. On Proxmox 8.1+, <code>pct set &lt;id&gt; --dev0 /dev/net/tun</code> is an alternative.</li>
+      </ul>
+      <p><strong>Note:</strong> any change to the ts-router container settings replaces the LXC. Before re-creating it, delete the old <code>ts-router</code> machine in the Tailscale admin console and generate a fresh one-time key, then re-approve the route and disable key expiry again; otherwise the new node registers as <code>ts-router-1</code>.</p>
+    </details>
   </section>
 </main>
 <script src="data/apps.js"></script>

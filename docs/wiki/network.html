@@ -104,6 +104,11 @@
   </section>
 
   <section class="section">
+    <h2>Remote access</h2>
+    <p>Away from home, devices reach the LAN over Tailscale. The <code>ts-router</code> LXC, created by <code>terraform/ts-router</code>, joins the tailnet and advertises the <code>192.168.31.0/24</code> subnet, so Proxmox, Home Assistant and any other LAN host are reachable by IP. Tailscale split DNS sends <code>local.&lt;domain&gt;</code> queries to Pi-hole, so <code>&lt;app&gt;.local.&lt;domain&gt;</code> works away from home too. Public names still resolve and route through Cloudflare as usual. The router sits outside k3s, so remote access keeps working when the cluster is down. Setup steps are in the <a href="runbooks.html#vpn">runbook</a>.</p>
+  </section>
+
+  <section class="section">
     <h2>Expose an app</h2>
     <details id="lan-only">
       <summary>LAN only</summary>
