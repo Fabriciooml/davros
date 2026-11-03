@@ -39,7 +39,29 @@ spec:
         KubeControllerManagerDown: true
         KubeProxyDown: true
 
+    prometheusOperator:
+      resources:
+        requests:
+          cpu: 10m
+          memory: 64Mi
+        limits:
+          memory: 128Mi
+      prometheusConfigReloader:
+        resources:
+          requests:
+            cpu: 10m
+            memory: 16Mi
+          limits:
+            memory: 64Mi
+
     grafana:
+      sidecar:
+        resources:
+          requests:
+            cpu: 10m
+            memory: 64Mi
+          limits:
+            memory: 192Mi
       admin:
         existingSecret: grafana-admin-credentials
       persistence:

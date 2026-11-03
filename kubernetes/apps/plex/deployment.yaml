@@ -50,8 +50,10 @@ spec:
             requests:
               cpu: 250m
               memory: 768Mi
+              ephemeral-storage: 100Mi
             limits:
               memory: 3Gi
+              ephemeral-storage: 12Gi
           volumeMounts:
             - name: config
               mountPath: /config
@@ -68,7 +70,8 @@ spec:
           persistentVolumeClaim:
             claimName: plex-config
         - name: transcode
-          emptyDir: {}
+          emptyDir:
+            sizeLimit: 10Gi
         - name: tv
           hostPath:
             path: /mnt/pool-data/media/tv

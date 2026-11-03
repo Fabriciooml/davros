@@ -2,3 +2,16 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: samsa
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: ephemeral-storage-defaults
+  namespace: samsa
+spec:
+  limits:
+    - type: Container
+      defaultRequest:
+        ephemeral-storage: 100Mi
+      default:
+        ephemeral-storage: 2Gi

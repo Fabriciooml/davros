@@ -13,3 +13,22 @@ patches:
       metadata:
         name: local-path
       reclaimPolicy: Retain
+  - target:
+      kind: Deployment
+      name: local-path-provisioner
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: local-path-provisioner
+      spec:
+        template:
+          spec:
+            containers:
+              - name: local-path-provisioner
+                resources:
+                  requests:
+                    cpu: 10m
+                    memory: 32Mi
+                  limits:
+                    memory: 128Mi
