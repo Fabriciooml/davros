@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wiki-nginx
+  namespace: wiki
+data:
+  default.conf: |
+    server {
+        listen 8080;
+        root /git/current/docs/wiki;
+        index index.html;
+
+        location / {
+            try_files $uri $uri/ =404;
+        }
+    }

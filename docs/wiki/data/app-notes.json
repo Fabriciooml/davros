@@ -22,5 +22,6 @@
   "radarr": {"category": "media", "description": "Movie collection manager."},
   "samsa": {"category": "own apps", "description": "samsa. Own app; follows new image builds automatically."},
   "sonarr": {"category": "media", "description": "TV series collection manager. Hardlinks imports from qBittorrent."},
-  "vaultwarden": {"category": "apps", "description": "Self-hosted Bitwarden-compatible password manager."}
+  "vaultwarden": {"category": "apps", "description": "Self-hosted Bitwarden-compatible password manager."},
+  "wiki": {"category": "apps", "description": "This wiki. nginx serves docs/wiki straight from the repo; git-sync pulls main every minute. LAN only."}
 }

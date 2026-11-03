@@ -692,6 +692,34 @@
           "size": "1Gi"
         }
       ]
+    },
+    {
+      "category": "apps",
+      "description": "This wiki. nginx serves docs/wiki straight from the repo; git-sync pulls main every minute. LAN only.",
+      "hosts": [
+        {
+          "host": "wiki.local.<domain>",
+          "visibility": "lan"
+        }
+      ],
+      "images": [
+        {
+          "pinned": true,
+          "repo": "nginxinc/nginx-unprivileged",
+          "tag": "1.29-alpine"
+        },
+        {
+          "pinned": true,
+          "repo": "registry.k8s.io/git-sync/git-sync",
+          "tag": "v4.4.0"
+        }
+      ],
+      "lan": true,
+      "name": "wiki",
+      "namespace": "wiki",
+      "public": false,
+      "stateful": false,
+      "storage": []
     }
   ]
 }
