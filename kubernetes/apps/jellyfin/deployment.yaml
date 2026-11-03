@@ -21,6 +21,16 @@ spec:
       securityContext:
         runAsUser: 1000
         runAsGroup: 1000
+      initContainers:
+        - name: cache-perms
+          image: jellyfin/jellyfin:10.11.8@sha256:1694ff069f0c9dafb283c36765175606866769f5d72f2ed56b6a0f1be922fc37
+          command: ["chmod", "1777", "/var/cache/jellyfin"]
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+          volumeMounts:
+            - name: cache
+              mountPath: /var/cache/jellyfin
       containers:
         - name: jellyfin
           image: jellyfin/jellyfin:10.11.8@sha256:1694ff069f0c9dafb283c36765175606866769f5d72f2ed56b6a0f1be922fc37
@@ -81,8 +91,11 @@ spec:
         - name: config
           persistentVolumeClaim:
             claimName: jellyfin-config
+        # transcodes write ~70MB/s; keep them off the 33GB node root disk
         - name: cache
-          emptyDir: {}
+          hostPath:
+            path: /mnt/pool-data/jellyfin-cache
+            type: DirectoryOrCreate
         - name: logs
           emptyDir: {}
         - name: tv
