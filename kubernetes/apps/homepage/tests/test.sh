@@ -59,6 +59,7 @@ if [ -n "$refs" ]; then
     echo "$have" | grep -qx "$r" || { echo "FAIL: $r referenced in config but absent from homepage-secrets.sops.yaml"; exit 1; }
   done
   [ "$(echo "$built" | yq e 'select(.kind == "Secret" and .metadata.name == "homepage-secrets") | .stringData | to_entries | .[].value' - | grep -cv '^ENC\[')" = "0" ] || { echo "FAIL: homepage-secrets must be fully SOPS encrypted"; exit 1; }
+  echo "$built" | yq e 'select(.kind == "Secret" and .metadata.name == "homepage-secrets") | .metadata.name' - | grep -qx homepage-secrets || { echo "FAIL: homepage-secrets Secret not in the kustomization"; exit 1; }
 fi
 
 echo "PASS"

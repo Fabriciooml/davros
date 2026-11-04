@@ -5,6 +5,7 @@ resources:
   - deployment.yaml
   - service.yaml
   - ingressroute.yaml
+  - homepage-secrets.sops.yaml
 configMapGenerator:
   - name: homepage
     namespace: homepage

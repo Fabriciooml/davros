@@ -19,6 +19,10 @@
     - Overseerr:
         icon: overseerr.svg
         href: https://requester.local.fabriciooml.dev
+        widget:
+          type: overseerr
+          url: http://overseerr.overseerr.svc.cluster.local:5055
+          key: "{{HOMEPAGE_VAR_OVERSEERR_KEY}}"
         siteMonitor: http://overseerr.overseerr.svc.cluster.local:5055
     - AudiobookRequest:
         icon: mdi-book-music
@@ -27,18 +31,34 @@
     - Sonarr:
         icon: sonarr.svg
         href: https://sonarr.local.fabriciooml.dev
+        widget:
+          type: sonarr
+          url: http://sonarr.arr.svc.cluster.local:8989
+          key: "{{HOMEPAGE_VAR_SONARR_KEY}}"
         siteMonitor: http://sonarr.arr.svc.cluster.local:8989
     - Radarr:
         icon: radarr.svg
         href: https://radarr.local.fabriciooml.dev
+        widget:
+          type: radarr
+          url: http://radarr.arr.svc.cluster.local:7878
+          key: "{{HOMEPAGE_VAR_RADARR_KEY}}"
         siteMonitor: http://radarr.arr.svc.cluster.local:7878
     - Prowlarr:
         icon: prowlarr.svg
         href: https://prowlarr.local.fabriciooml.dev
+        widget:
+          type: prowlarr
+          url: http://prowlarr.arr.svc.cluster.local:9696
+          key: "{{HOMEPAGE_VAR_PROWLARR_KEY}}"
         siteMonitor: http://prowlarr.arr.svc.cluster.local:9696
     - Bazarr:
         icon: bazarr.svg
         href: https://bazarr.local.fabriciooml.dev
+        widget:
+          type: bazarr
+          url: http://bazarr.arr.svc.cluster.local:6767
+          key: "{{HOMEPAGE_VAR_BAZARR_KEY}}"
         siteMonitor: http://bazarr.arr.svc.cluster.local:6767
     - Chaptarr:
         icon: readarr.svg
