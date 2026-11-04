@@ -9,6 +9,7 @@
   "couchdb": {"category": "data", "description": "CouchDB backing the Obsidian live-sync vault."},
   "cwa": {"category": "media", "description": "Calibre-Web Automated: ebook library with OPDS and KOReader sync. Imports whatever lands in its ingest folder."},
   "flaresolverr": {"category": "media", "description": "Cloudflare-challenge solver proxy used by Prowlarr."},
+  "homepage": {"category": "apps", "description": "LAN start page (gethomepage) with a tile and status dot for every app, plus live widgets where an API key is set. Config lives as files in kubernetes/apps/homepage/config; LAN only."},
   "jellyfin": {"category": "media", "description": "Media server for movies and shows with GPU transcoding."},
   "kafka": {"category": "data", "description": "Single-broker Apache Kafka with a Kafka UI for browsing topics."},
   "mapa": {"category": "own apps", "description": "Nosso Mapa: shared map app, frontend plus backend. Own app; follows new image builds."},

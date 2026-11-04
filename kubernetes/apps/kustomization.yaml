@@ -12,6 +12,7 @@ resources:
   - couchdb
   - cwa
   - flaresolverr
+  - homepage
   - jellyfin
   - kafka
   - mapa

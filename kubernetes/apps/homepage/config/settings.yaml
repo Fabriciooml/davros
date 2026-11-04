@@ -1,0 +1,22 @@
+title: Davros
+theme: dark
+color: slate
+headerStyle: clean
+statusStyle: dot
+hideVersion: true
+layout:
+  Media:
+    style: row
+    columns: 4
+  Requests and automation:
+    style: row
+    columns: 4
+  Apps:
+    style: row
+    columns: 4
+  Data and dev:
+    style: row
+    columns: 4
+  Infra:
+    style: row
+    columns: 4

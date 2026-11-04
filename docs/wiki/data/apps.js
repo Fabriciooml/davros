@@ -276,6 +276,29 @@ window.WIKI_APPS = {
       "storage": []
     },
     {
+      "category": "apps",
+      "description": "LAN start page (gethomepage) with a tile and status dot for every app, plus live widgets where an API key is set. Config lives as files in kubernetes/apps/homepage/config; LAN only.",
+      "hosts": [
+        {
+          "host": "home.local.<domain>",
+          "visibility": "lan"
+        }
+      ],
+      "images": [
+        {
+          "pinned": true,
+          "repo": "ghcr.io/gethomepage/homepage",
+          "tag": "v2.7.0"
+        }
+      ],
+      "lan": true,
+      "name": "homepage",
+      "namespace": "homepage",
+      "public": false,
+      "stateful": false,
+      "storage": []
+    },
+    {
       "category": "media",
       "description": "Media server for movies and shows with GPU transcoding.",
       "hosts": [
