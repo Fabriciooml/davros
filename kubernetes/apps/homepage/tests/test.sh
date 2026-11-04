@@ -17,13 +17,13 @@ echo "$dep" | yq e '.spec.template.spec.containers[0].image' - | grep -Eq '^ghcr
 [ "$(echo "$dep" | yq e '.spec.template.spec.containers[0].envFrom[] | select(.secretRef.name == "homepage-secrets") | .secretRef.optional' -)" = "true" ] || { echo "FAIL: homepage-secrets must be an optional envFrom"; exit 1; }
 
 [ ! -e configmap.yaml ] || { echo "FAIL: config must be real files under config/ fed to configMapGenerator, not an inline ConfigMap"; exit 1; }
-for key in settings services widgets bookmarks docker kubernetes; do
-  [ -f "config/$key.yaml" ] || { echo "FAIL: config/$key.yaml missing"; exit 1; }
+for file in settings.yaml services.yaml widgets.yaml bookmarks.yaml docker.yaml kubernetes.yaml proxmox.yaml custom.css custom.js; do
+  [ -f "config/$file" ] || { echo "FAIL: config/$file missing"; exit 1; }
 done
 cm=$(echo "$built" | yq e 'select(.kind == "ConfigMap" and (.metadata.name | test("^homepage-[a-z0-9]+$")))' -)
 [ -n "$cm" ] || { echo "FAIL: generated ConfigMap homepage-<hash> missing"; exit 1; }
 [ "$(echo "$dep" | yq e '.spec.template.spec.volumes[] | select(.name == "config") | .configMap.name' -)" = "$(echo "$cm" | yq e '.metadata.name' -)" ] || { echo "FAIL: Deployment must mount the generated ConfigMap"; exit 1; }
-for key in settings.yaml services.yaml widgets.yaml bookmarks.yaml docker.yaml kubernetes.yaml; do
+for key in settings.yaml services.yaml widgets.yaml bookmarks.yaml docker.yaml kubernetes.yaml proxmox.yaml custom.css custom.js; do
   [ "$(echo "$cm" | yq e ".data | has(\"$key\")" -)" = "true" ] || { echo "FAIL: ConfigMap key $key missing"; exit 1; }
 done
 
