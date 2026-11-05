@@ -3,6 +3,12 @@
         icon: jellyfin.svg
         href: https://jellyfin.local.fabriciooml.dev
         siteMonitor: http://jellyfin.jellyfin.svc.cluster.local:8096
+        widget:
+          type: jellyfin
+          url: http://jellyfin.jellyfin.svc.cluster.local:8096
+          key: "{{HOMEPAGE_VAR_JELLYFIN_KEY}}"
+          enableBlocks: true
+          enableNowPlaying: true
     - Plex:
         icon: plex.svg
         href: https://plex.local.fabriciooml.dev
@@ -11,10 +17,19 @@
         icon: audiobookshelf.svg
         href: https://audiobookshelf.local.fabriciooml.dev
         siteMonitor: http://audiobookshelf.audiobookshelf.svc.cluster.local
+        widget:
+          type: audiobookshelf
+          url: http://audiobookshelf.audiobookshelf.svc.cluster.local
+          key: "{{HOMEPAGE_VAR_ABS_KEY}}"
     - Calibre-Web:
         icon: calibre-web.svg
         href: https://cwa.local.fabriciooml.dev
         siteMonitor: http://cwa.cwa.svc.cluster.local:8083
+        widget:
+          type: calibreweb
+          url: http://cwa.cwa.svc.cluster.local:8083
+          username: "{{HOMEPAGE_VAR_CWA_USER}}"
+          password: "{{HOMEPAGE_VAR_CWA_PASS}}"
 - Requests and automation:
     - Overseerr:
         icon: overseerr.svg
@@ -68,11 +83,21 @@
         icon: qbittorrent.svg
         href: https://torrent.local.fabriciooml.dev
         siteMonitor: http://qbittorrent.arr.svc.cluster.local:4242
+        widget:
+          type: qbittorrent
+          url: http://qbittorrent.arr.svc.cluster.local:4242
+          username: "{{HOMEPAGE_VAR_QBIT_USER}}"
+          password: "{{HOMEPAGE_VAR_QBIT_PASS}}"
 - Apps:
     - Mealie:
         icon: mealie.svg
         href: https://mealie.local.fabriciooml.dev
         siteMonitor: http://mealie.mealie.svc.cluster.local:9000
+        widget:
+          type: mealie
+          url: http://mealie.mealie.svc.cluster.local:9000
+          version: 2
+          key: "{{HOMEPAGE_VAR_MEALIE_KEY}}"
     - Vaultwarden:
         icon: vaultwarden.svg
         href: https://vault.local.fabriciooml.dev
