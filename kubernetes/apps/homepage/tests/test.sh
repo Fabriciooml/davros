@@ -32,7 +32,7 @@ svc=$(echo "$built" | yq e 'select(.kind == "Service" and .metadata.name == "hom
 
 route=$(echo "$built" | yq e 'select(.kind == "IngressRoute" and .metadata.name == "homepage")' -)
 echo "$route" | grep -qF 'Host(`home.local.fabriciooml.dev`)' || { echo "FAIL: LAN host home.local.fabriciooml.dev missing"; exit 1; }
-[ "$(echo "$route" | grep -c 'Host(')" = "1" ] || { echo "FAIL: homepage must stay LAN only, no public host"; exit 1; }
+[ "$(echo "$built" | yq e 'select(.kind == "IngressRoute")' - | grep -o 'Host(' | wc -l)" = "1" ] || { echo "FAIL: homepage must serve exactly one LAN host, no public host"; exit 1; }
 [ "$(echo "$route" | yq e '.spec.tls | has("secretName")' -)" = "false" ] || { echo "FAIL: route must use the default TLSStore"; exit 1; }
 
 echo "$built" | yq e 'select(.kind == "ServiceAccount" or .kind == "ClusterRole" or .kind == "ClusterRoleBinding")' - | grep -q . && { echo "FAIL: no RBAC in the POC"; exit 1; }
@@ -51,7 +51,8 @@ done
 
 # Widget secrets must be referenced, never inlined; every referenced var must exist in the SOPS file.
 refs=$(cat config/*.yaml | grep -oE 'HOMEPAGE_VAR_[A-Z0-9_]+' | sort -u || true)
-if cat config/*.yaml | grep -Eiq '(apikey|key|password|token|secret): +[^{ "][^ ]{15,}'; then echo "FAIL: config/ contains a literal secret-looking value"; exit 1; fi
+bad_cred=$(grep -hE '^[[:space:]]*(- )?(key|apikey|password|token|secret|username):' config/*.yaml | grep -vE '^[[:space:]]*(- )?(key|apikey|password|token|secret|username): +"\{\{HOMEPAGE_VAR_[A-Z0-9_]+\}\}"$' || true)
+[ -z "$bad_cred" ] || { echo "FAIL: config/ has a credential field that is not a {{HOMEPAGE_VAR_*}} placeholder"; exit 1; }
 if [ -n "$refs" ]; then
   [ -f homepage-secrets.sops.yaml ] || { echo "FAIL: config references HOMEPAGE_VAR_* but homepage-secrets.sops.yaml is missing"; exit 1; }
   have=$(yq e '.stringData | keys | .[]' homepage-secrets.sops.yaml | sort -u)
