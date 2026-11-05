@@ -132,23 +132,48 @@
         icon: grafana.svg
         href: https://grafana.local.fabriciooml.dev
         siteMonitor: https://grafana.local.fabriciooml.dev
+        widget:
+          type: grafana
+          url: http://kube-prometheus-stack-grafana.monitoring.svc.cluster.local
+          username: "{{HOMEPAGE_VAR_GRAFANA_USER}}"
+          password: "{{HOMEPAGE_VAR_GRAFANA_PASS}}"
     - Prometheus:
         icon: prometheus.svg
         href: https://prometheus.local.fabriciooml.dev
         siteMonitor: https://prometheus.local.fabriciooml.dev
+        widget:
+          type: prometheus
+          url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
     - Traefik:
         icon: traefik.svg
         href: https://traefik.local.fabriciooml.dev
         siteMonitor: https://traefik.local.fabriciooml.dev
+        widget:
+          type: traefik
+          url: https://traefik.local.fabriciooml.dev
     - Proxmox:
         icon: proxmox.svg
         href: https://proxmox.local.fabriciooml.dev
         siteMonitor: https://192.168.31.42:8006
+        widget:
+          type: proxmox
+          url: https://192.168.31.42:8006
+          username: "{{HOMEPAGE_VAR_PROXMOX_USER}}"
+          password: "{{HOMEPAGE_VAR_PROXMOX_SECRET}}"
     - Pi-hole:
         icon: pi-hole.svg
         href: https://pihole.local.fabriciooml.dev
         siteMonitor: http://192.168.31.152/admin/
+        widget:
+          type: pihole
+          url: http://192.168.31.152
+          version: 6
+          key: "{{HOMEPAGE_VAR_PIHOLE_KEY}}"
     - Home Assistant:
         icon: home-assistant.svg
         href: https://haos.local.fabriciooml.dev
         siteMonitor: http://192.168.31.128:8123
+        widget:
+          type: homeassistant
+          url: http://192.168.31.128:8123
+          key: "{{HOMEPAGE_VAR_HA_TOKEN}}"
