@@ -9,10 +9,6 @@
           key: "{{HOMEPAGE_VAR_JELLYFIN_KEY}}"
           enableBlocks: true
           enableNowPlaying: true
-    - Plex:
-        icon: plex.svg
-        href: https://plex.local.fabriciooml.dev
-        siteMonitor: http://plex.plex.svc.cluster.local:32400/identity
     - Audiobookshelf:
         icon: audiobookshelf.svg
         href: https://audiobookshelf.local.fabriciooml.dev
@@ -114,10 +110,6 @@
         icon: mdi-bug
         href: https://samsa.local.fabriciooml.dev
         siteMonitor: http://samsa.samsa.svc.cluster.local
-    - Muad-dib:
-        icon: mdi-sword
-        href: https://muad-dib.local.fabriciooml.dev
-        siteMonitor: http://muad-dib.muad-dib.svc.cluster.local
     - Wiki:
         icon: mdi-book-open-variant
         href: https://wiki.local.fabriciooml.dev
@@ -155,12 +147,8 @@
     - Pi-hole:
         icon: pi-hole.svg
         href: https://pihole.local.fabriciooml.dev
-        siteMonitor: http://192.168.31.152
+        siteMonitor: http://192.168.31.152/admin/
     - Home Assistant:
         icon: home-assistant.svg
         href: https://haos.local.fabriciooml.dev
         siteMonitor: http://192.168.31.128:8123
-    - Portainer:
-        icon: portainer.svg
-        href: https://docker.local.fabriciooml.dev
-        siteMonitor: https://192.168.31.226:9443

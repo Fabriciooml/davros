@@ -38,7 +38,7 @@ echo "$route" | grep -qF 'Host(`home.local.fabriciooml.dev`)' || { echo "FAIL: L
 echo "$built" | yq e 'select(.kind == "ServiceAccount" or .kind == "ClusterRole" or .kind == "ClusterRoleBinding")' - | grep -q . && { echo "FAIL: no RBAC in the POC"; exit 1; }
 
 services=$(echo "$cm" | yq e '.data["services.yaml"]' -)
-[ "$(echo "$services" | yq e '[.[] | to_entries | .[].value[]] | length' -)" -ge 28 ] || { echo "FAIL: expected at least 28 service tiles"; exit 1; }
+[ "$(echo "$services" | yq e '[.[] | to_entries | .[].value[]] | length' -)" = "26" ] || { echo "FAIL: expected exactly 26 service tiles"; exit 1; }
 [ "$(echo "$services" | yq e '[.[] | to_entries | .[].value[] | to_entries | .[].value | select(has("href") | not)] | length' -)" = "0" ] || { echo "FAIL: every tile needs an href"; exit 1; }
 
 # Every LAN href must point at a host some IngressRoute in the repo serves.
