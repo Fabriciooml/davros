@@ -16,9 +16,9 @@
     - Proxmox:
         - abbr: PX
           href: https://pve.proxmox.com/pve-docs/
-    - Talos:
-        - abbr: TL
-          href: https://www.talos.dev/
+    - K3s:
+        - abbr: K3
+          href: https://docs.k3s.io/
     - Flux:
         - abbr: FX
           href: https://fluxcd.io/flux/

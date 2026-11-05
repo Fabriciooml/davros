@@ -83,10 +83,14 @@ wx='.[] | select(has("openmeteo")) | .openmeteo'
 cal=$(echo "$services" | yq e '.[] | to_entries | .[].value[] | to_entries | .[].value | select(.widget.type == "calendar")' -)
 [ -n "$cal" ] || { echo "FAIL: calendar tile missing"; exit 1; }
 [ "$(echo "$cal" | yq e '.widget.integrations | length' -)" -ge 1 ] || { echo "FAIL: calendar needs at least one integration"; exit 1; }
-echo "$cal" | yq e -o=json -I=0 '.widget.integrations[]' - | while IFS= read -r integ; do
+echo "$cal" | yq e -o=json -I=0 '.widget.integrations[] | select(.type != "ical")' - | while IFS= read -r integ; do
   g=$(echo "$integ" | yq e '.service_group' -)
   n=$(echo "$integ" | yq e '.service_name' -)
   [ "$(echo "$services" | G="$g" N="$n" yq e '[.[] | select(has(strenv(G))) | .[strenv(G)][] | has(strenv(N))] | any' -)" = "true" ] || { echo "FAIL: calendar integration $g / $n matches no tile"; exit 1; }
+done
+# iCal sources must be https and either a public Google feed or a secret placeholder (never an inlined private feed URL).
+echo "$cal" | yq e '.widget.integrations[] | select(.type == "ical") | .url' - | while IFS= read -r u; do
+  echo "$u" | grep -qE '^https://calendar\.google\.com/calendar/ical/[^?]+/public/basic\.ics$|^"?\{\{HOMEPAGE_VAR_[A-Z0-9_]+\}\}"?$' || { echo "FAIL: ical url must be a public Google feed or a HOMEPAGE_VAR placeholder: $u"; exit 1; }
 done
 
 # Layout: every layout group has tiles, and every tile group is in the layout.

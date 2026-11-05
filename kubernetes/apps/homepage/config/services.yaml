@@ -15,6 +15,10 @@
             - type: radarr
               service_group: Requests and automation
               service_name: Radarr
+            - type: ical
+              name: Feriados
+              color: teal
+              url: https://calendar.google.com/calendar/ical/pt-br.brazilian%23holiday%40group.v.calendar.google.com/public/basic.ics
 - Media:
     - Jellyfin:
         icon: jellyfin.svg
