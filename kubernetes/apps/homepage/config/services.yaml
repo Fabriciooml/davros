@@ -1,3 +1,20 @@
+- Calendar:
+    - Calendar:
+        icon: mdi-calendar
+        widget:
+          type: calendar
+          view: monthly
+          maxEvents: 10
+          showTime: true
+          firstDayInWeek: sunday
+          timezone: America/Sao_Paulo
+          integrations:
+            - type: sonarr
+              service_group: Requests and automation
+              service_name: Sonarr
+            - type: radarr
+              service_group: Requests and automation
+              service_name: Radarr
 - Media:
     - Jellyfin:
         icon: jellyfin.svg

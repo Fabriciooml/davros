@@ -1,6 +1,13 @@
 - search:
     provider: duckduckgo
     target: _blank
+- openmeteo:
+    label: Belo Horizonte
+    latitude: -19.92
+    longitude: -43.94
+    timezone: America/Sao_Paulo
+    units: metric
+    cache: 5
 - datetime:
     text_size: xl
     format:

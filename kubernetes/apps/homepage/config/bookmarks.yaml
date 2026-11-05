@@ -1,1 +1,24 @@
-[]
+- Dev:
+    - Davros repo:
+        - abbr: GH
+          href: https://github.com/Fabriciooml/davros
+- Cloud:
+    - Cloudflare:
+        - abbr: CF
+          href: https://dash.cloudflare.com
+    - Cloudflare Zero Trust:
+        - abbr: ZT
+          href: https://one.dash.cloudflare.com
+    - Tailscale:
+        - abbr: TS
+          href: https://login.tailscale.com/admin/machines
+- Docs:
+    - Proxmox:
+        - abbr: PX
+          href: https://pve.proxmox.com/pve-docs/
+    - Talos:
+        - abbr: TL
+          href: https://www.talos.dev/
+    - Flux:
+        - abbr: FX
+          href: https://fluxcd.io/flux/

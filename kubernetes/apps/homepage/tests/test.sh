@@ -38,13 +38,14 @@ echo "$route" | grep -qF 'Host(`home.local.fabriciooml.dev`)' || { echo "FAIL: L
 echo "$built" | yq e 'select(.kind == "ServiceAccount" or .kind == "ClusterRole" or .kind == "ClusterRoleBinding")' - | grep -q . && { echo "FAIL: no RBAC in the POC"; exit 1; }
 
 services=$(echo "$cm" | yq e '.data["services.yaml"]' -)
-[ "$(echo "$services" | yq e '[.[] | to_entries | .[].value[]] | length' -)" = "26" ] || { echo "FAIL: expected exactly 26 service tiles"; exit 1; }
-[ "$(echo "$services" | yq e '[.[] | to_entries | .[].value[] | to_entries | .[].value | select(has("href") | not)] | length' -)" = "0" ] || { echo "FAIL: every tile needs an href"; exit 1; }
+[ "$(echo "$services" | yq e '[.[] | to_entries | .[].value[] | to_entries | .[].value | select(has("href"))] | length' -)" = "26" ] || { echo "FAIL: expected exactly 26 link tiles (tiles with an href)"; exit 1; }
+nohref=$(echo "$services" | yq e '.[] | to_entries | .[].value[] | to_entries | .[].value | select(has("href") | not) | .widget.type' -)
+[ -z "$nohref" ] || [ "$(echo "$nohref" | sort -u)" = "calendar" ] || { echo "FAIL: a tile without href must be a calendar widget"; exit 1; }
 
 # Every LAN href must point at a host some IngressRoute in the repo serves.
 repo_root=$(cd ../../.. && pwd)
 known=$(grep -rhoE 'Host\(`[^`]+`\)' "$repo_root/kubernetes" --include='*.yaml' | sed -E 's/Host\(`([^`]+)`\)/\1/' | sort -u)
-hrefs=$(echo "$services" | yq e '.[] | to_entries | .[].value[] | to_entries | .[].value.href' - | sed -E 's#https://([^/]+).*#\1#' | sort -u)
+hrefs=$(echo "$services" | yq e '.[] | to_entries | .[].value[] | to_entries | .[].value | select(has("href")) | .href' - | sed -E 's#https://([^/]+).*#\1#' | sort -u)
 for h in $hrefs; do
   echo "$known" | grep -qx "$h" || { echo "FAIL: href host $h is not served by any IngressRoute in the repo"; exit 1; }
 done
@@ -62,5 +63,40 @@ if [ -n "$refs" ]; then
   [ "$(echo "$built" | yq e 'select(.kind == "Secret" and .metadata.name == "homepage-secrets") | .stringData | to_entries | .[].value' - | grep -cv '^ENC\[')" = "0" ] || { echo "FAIL: homepage-secrets must be fully SOPS encrypted"; exit 1; }
   echo "$built" | yq e 'select(.kind == "Secret" and .metadata.name == "homepage-secrets") | .metadata.name' - | grep -qx homepage-secrets || { echo "FAIL: homepage-secrets Secret not in the kustomization"; exit 1; }
 fi
+
+# Bookmarks: three groups, seven https links.
+bm=$(echo "$cm" | yq e '.data["bookmarks.yaml"]' -)
+[ "$(echo "$bm" | yq e '[.[] | keys | .[]] | join(",")' -)" = "Dev,Cloud,Docs" ] || { echo "FAIL: bookmarks must have groups Dev, Cloud, Docs in that order"; exit 1; }
+[ "$(echo "$bm" | yq e '[.[] | to_entries | .[].value[] | to_entries | .[].value[].href] | length' -)" = "7" ] || { echo "FAIL: expected exactly 7 bookmarks"; exit 1; }
+bad_bm=$(echo "$bm" | yq e '.[] | to_entries | .[].value[] | to_entries | .[].value[].href' - | grep -vE '^https://' || true)
+[ -z "$bad_bm" ] || { echo "FAIL: every bookmark href must be https://"; exit 1; }
+
+# Weather: Open-Meteo for Belo Horizonte, metric.
+widgets=$(echo "$cm" | yq e '.data["widgets.yaml"]' -)
+wx='.[] | select(has("openmeteo")) | .openmeteo'
+[ "$(echo "$widgets" | yq e "$wx | .latitude" -)" = "-19.92" ] || { echo "FAIL: openmeteo latitude must be -19.92"; exit 1; }
+[ "$(echo "$widgets" | yq e "$wx | .longitude" -)" = "-43.94" ] || { echo "FAIL: openmeteo longitude must be -43.94"; exit 1; }
+[ "$(echo "$widgets" | yq e "$wx | .timezone" -)" = "America/Sao_Paulo" ] || { echo "FAIL: openmeteo timezone must be America/Sao_Paulo"; exit 1; }
+[ "$(echo "$widgets" | yq e "$wx | .units" -)" = "metric" ] || { echo "FAIL: openmeteo units must be metric"; exit 1; }
+
+# Calendar: one calendar tile whose integrations point at tiles that exist.
+cal=$(echo "$services" | yq e '.[] | to_entries | .[].value[] | to_entries | .[].value | select(.widget.type == "calendar")' -)
+[ -n "$cal" ] || { echo "FAIL: calendar tile missing"; exit 1; }
+[ "$(echo "$cal" | yq e '.widget.integrations | length' -)" -ge 1 ] || { echo "FAIL: calendar needs at least one integration"; exit 1; }
+echo "$cal" | yq e -o=json -I=0 '.widget.integrations[]' - | while IFS= read -r integ; do
+  g=$(echo "$integ" | yq e '.service_group' -)
+  n=$(echo "$integ" | yq e '.service_name' -)
+  [ "$(echo "$services" | G="$g" N="$n" yq e '[.[] | select(has(strenv(G))) | .[strenv(G)][] | has(strenv(N))] | any' -)" = "true" ] || { echo "FAIL: calendar integration $g / $n matches no tile"; exit 1; }
+done
+
+# Layout: every layout group has tiles, and every tile group is in the layout.
+settings=$(echo "$cm" | yq e '.data["settings.yaml"]' -)
+groups=$(echo "$services" | yq e '.[] | keys | .[]' - | sort -u)
+echo "$settings" | yq e '.layout | keys | .[]' - | while IFS= read -r g; do
+  echo "$groups" | grep -qxF "$g" || { echo "FAIL: settings layout group '$g' has no tiles"; exit 1; }
+done
+echo "$groups" | while IFS= read -r g; do
+  [ "$(echo "$settings" | G="$g" yq e '.layout | has(strenv(G))' -)" = "true" ] || { echo "FAIL: group '$g' is missing from settings layout"; exit 1; }
+done
 
 echo "PASS"
