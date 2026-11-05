@@ -163,7 +163,7 @@
     - Pi-hole:
         icon: pi-hole.svg
         href: https://pihole.local.fabriciooml.dev
-        siteMonitor: http://192.168.31.152/admin/
+        siteMonitor: https://pihole.local.fabriciooml.dev/admin/
         widget:
           type: pihole
           url: http://192.168.31.152
