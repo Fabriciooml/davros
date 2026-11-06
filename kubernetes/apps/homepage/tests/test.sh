@@ -107,8 +107,9 @@ echo "$cluster" | yq e '.[] | to_entries | .[].value.widget.url' - | while IFS= 
   esac
   [ -n "$(urldecode "${u#"$prom_base"}")" ] || { echo "FAIL: empty PromQL in $u"; exit 1; }
 done
-bad_map=$(echo "$cluster" | yq e '.[] | to_entries | .[].value.widget.mappings[] | select(.field != "data.result.0.value.1" or .scale != 1)' -)
-[ -z "$bad_map" ] || { echo "FAIL: every Cluster mapping needs field data.result.0.value.1 and scale 1"; exit 1; }
+# Homepage's percent format does not multiply by 100, so fractions need scale 100; counts need scale 1 (coerces Prometheus strings to numbers).
+bad_map=$(echo "$cluster" | yq e '.[] | to_entries | .[].value.widget.mappings[] | select(.field != "data.result.0.value.1" or (.format == "percent" and .scale != 100) or (.format != "percent" and .scale != 1))' -)
+[ -z "$bad_map" ] || { echo "FAIL: every Cluster mapping needs field data.result.0.value.1, scale 100 with format percent, scale 1 otherwise"; exit 1; }
 
 # Layout: every layout group has tiles, and every tile group is in the layout.
 settings=$(echo "$cm" | yq e '.data["settings.yaml"]' -)

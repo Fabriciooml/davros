@@ -9,7 +9,7 @@
             - field: data.result.0.value.1
               label: Node CPU
               format: percent
-              scale: 1
+              scale: 100
     - Memory:
         icon: mdi-memory
         widget:
@@ -20,7 +20,7 @@
             - field: data.result.0.value.1
               label: Node memory
               format: percent
-              scale: 1
+              scale: 100
     - Media pool:
         icon: mdi-harddisk
         widget:
@@ -31,7 +31,7 @@
             - field: data.result.0.value.1
               label: Used
               format: percent
-              scale: 1
+              scale: 100
     - Pods:
         icon: mdi-kubernetes
         widget:
