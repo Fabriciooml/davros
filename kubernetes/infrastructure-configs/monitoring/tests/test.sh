@@ -70,4 +70,12 @@ am_secret=$(echo "$built" | yq e 'select(.kind == "Secret" and .metadata.name ==
 [ "$(echo "$am_secret" | yq e 'has("sops")' -)" = "true" ] || { echo "FAIL: alertmanager-config must be sops-encrypted, it holds the telegram token"; exit 1; }
 [ "$(echo "$am_secret" | yq e '.data | has("alertmanager.yaml")' -)" = "true" ] || { echo "FAIL: alertmanager-config must carry an alertmanager.yaml key"; exit 1; }
 
+flux_pm=$(echo "$built" | yq e 'select(.kind == "PodMonitor" and .metadata.name == "flux-controllers")' -)
+[ -n "$flux_pm" ] || { echo "FAIL: no flux-controllers PodMonitor found"; exit 1; }
+[ "$(echo "$flux_pm" | yq e '.metadata.namespace' -)" = "monitoring" ] || { echo "FAIL: flux PodMonitor must live in the monitoring namespace"; exit 1; }
+[ "$(echo "$flux_pm" | yq e '.metadata.labels.release' -)" = "kube-prometheus-stack" ] || { echo "FAIL: flux PodMonitor needs release: kube-prometheus-stack or prometheus ignores it"; exit 1; }
+[ "$(echo "$flux_pm" | yq e '.spec.namespaceSelector.matchNames[0]' -)" = "flux-system" ] || { echo "FAIL: flux PodMonitor must select the flux-system namespace"; exit 1; }
+[ "$(echo "$flux_pm" | yq e '.spec.selector.matchLabels["app.kubernetes.io/part-of"]' -)" = "flux" ] || { echo "FAIL: flux PodMonitor must select pods labelled app.kubernetes.io/part-of=flux"; exit 1; }
+[ "$(echo "$flux_pm" | yq e '.spec.podMetricsEndpoints[0].port' -)" = "http-prom" ] || { echo "FAIL: flux PodMonitor must scrape the http-prom port"; exit 1; }
+
 echo "PASS"

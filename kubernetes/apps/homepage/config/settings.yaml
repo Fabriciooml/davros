@@ -5,6 +5,9 @@ headerStyle: clean
 statusStyle: dot
 hideVersion: true
 layout:
+  Cluster:
+    style: row
+    columns: 3
   Calendar:
     style: row
     columns: 1

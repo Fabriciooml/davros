@@ -40,7 +40,7 @@ echo "$built" | yq e 'select(.kind == "ServiceAccount" or .kind == "ClusterRole"
 services=$(echo "$cm" | yq e '.data["services.yaml"]' -)
 [ "$(echo "$services" | yq e '[.[] | to_entries | .[].value[] | to_entries | .[].value | select(has("href"))] | length' -)" = "26" ] || { echo "FAIL: expected exactly 26 link tiles (tiles with an href)"; exit 1; }
 nohref=$(echo "$services" | yq e '.[] | to_entries | .[].value[] | to_entries | .[].value | select(has("href") | not) | .widget.type' -)
-[ -z "$nohref" ] || [ "$(echo "$nohref" | sort -u)" = "calendar" ] || { echo "FAIL: a tile without href must be a calendar widget"; exit 1; }
+[ -z "$nohref" ] || [ -z "$(echo "$nohref" | sort -u | grep -vxE 'calendar|customapi' || true)" ] || { echo "FAIL: a tile without href must be a calendar or customapi widget"; exit 1; }
 
 # Every LAN href must point at a host some IngressRoute in the repo serves.
 repo_root=$(cd ../../.. && pwd)
@@ -92,6 +92,23 @@ done
 echo "$cal" | yq e '.widget.integrations[] | select(.type == "ical") | .url' - | while IFS= read -r u; do
   echo "$u" | grep -qE '^https://calendar\.google\.com/calendar/ical/[^?]+/public/basic\.ics$|^"?\{\{HOMEPAGE_VAR_[A-Z0-9_]+\}\}"?$' || { echo "FAIL: ical url must be a public Google feed or a HOMEPAGE_VAR placeholder: $u"; exit 1; }
 done
+
+# Cluster stats: customapi tiles must query the in-cluster Prometheus with a real query.
+prom_base='http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/api/v1/query?query='
+urldecode() { printf '%b' "${1//%/\\x}"; }
+cluster=$(echo "$services" | yq e '.[] | select(has("Cluster")) | .Cluster' -)
+[ -n "$cluster" ] || { echo "FAIL: Cluster group missing"; exit 1; }
+[ "$(echo "$cluster" | yq e 'length' -)" = "5" ] || { echo "FAIL: expected exactly 5 Cluster tiles"; exit 1; }
+[ "$(echo "$cluster" | yq e '[.[] | to_entries | .[].value.widget.type] | unique | join(",")' -)" = "customapi" ] || { echo "FAIL: every Cluster tile must be a customapi widget"; exit 1; }
+echo "$cluster" | yq e '.[] | to_entries | .[].value.widget.url' - | while IFS= read -r u; do
+  case "$u" in
+    "$prom_base"?*) ;;
+    *) echo "FAIL: Cluster tile url must query the in-cluster Prometheus: $u"; exit 1 ;;
+  esac
+  [ -n "$(urldecode "${u#"$prom_base"}")" ] || { echo "FAIL: empty PromQL in $u"; exit 1; }
+done
+bad_map=$(echo "$cluster" | yq e '.[] | to_entries | .[].value.widget.mappings[] | select(.field != "data.result.0.value.1" or .scale != 1)' -)
+[ -z "$bad_map" ] || { echo "FAIL: every Cluster mapping needs field data.result.0.value.1 and scale 1"; exit 1; }
 
 # Layout: every layout group has tiles, and every tile group is in the layout.
 settings=$(echo "$cm" | yq e '.data["settings.yaml"]' -)

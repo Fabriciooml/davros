@@ -1,3 +1,59 @@
+- Cluster:
+    - CPU:
+        icon: mdi-cpu-64-bit
+        widget:
+          type: customapi
+          url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/api/v1/query?query=1%20-%20avg%28rate%28node_cpu_seconds_total%7Bjob%3D%22node-exporter%22%2Cmode%3D%22idle%22%7D%5B5m%5D%29%29
+          refreshInterval: 30000
+          mappings:
+            - field: data.result.0.value.1
+              label: Node CPU
+              format: percent
+              scale: 1
+    - Memory:
+        icon: mdi-memory
+        widget:
+          type: customapi
+          url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/api/v1/query?query=1%20-%20sum%28node_memory_MemAvailable_bytes%7Bjob%3D%22node-exporter%22%7D%29%20%2F%20sum%28node_memory_MemTotal_bytes%7Bjob%3D%22node-exporter%22%7D%29
+          refreshInterval: 30000
+          mappings:
+            - field: data.result.0.value.1
+              label: Node memory
+              format: percent
+              scale: 1
+    - Media pool:
+        icon: mdi-harddisk
+        widget:
+          type: customapi
+          url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/api/v1/query?query=1%20-%20node_filesystem_avail_bytes%7Bmountpoint%3D%22%2Fmnt%2Fpool-data%22%7D%20%2F%20node_filesystem_size_bytes%7Bmountpoint%3D%22%2Fmnt%2Fpool-data%22%7D
+          refreshInterval: 60000
+          mappings:
+            - field: data.result.0.value.1
+              label: Used
+              format: percent
+              scale: 1
+    - Pods:
+        icon: mdi-kubernetes
+        widget:
+          type: customapi
+          url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/api/v1/query?query=sum%28kube_pod_status_phase%7Bphase%3D%22Running%22%7D%29
+          refreshInterval: 30000
+          mappings:
+            - field: data.result.0.value.1
+              label: Running
+              format: number
+              scale: 1
+    - Problem pods:
+        icon: mdi-alert-circle-outline
+        widget:
+          type: customapi
+          url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/api/v1/query?query=sum%28kube_pod_status_phase%7Bphase%3D~%22Failed%7CUnknown%22%7D%29%20or%20vector%280%29
+          refreshInterval: 30000
+          mappings:
+            - field: data.result.0.value.1
+              label: Failed or unknown
+              format: number
+              scale: 1
 - Calendar:
     - Calendar:
         icon: mdi-calendar

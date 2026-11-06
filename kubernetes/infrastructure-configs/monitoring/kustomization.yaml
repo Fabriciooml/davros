@@ -7,3 +7,4 @@ resources:
   - prometheus-ingressroute.yaml
   - host-scrapeconfig.yaml
   - host-alerts.yaml
+  - flux-podmonitor.yaml
