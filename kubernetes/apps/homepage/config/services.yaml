@@ -54,6 +54,17 @@
               label: Failed or unknown
               format: number
               scale: 1
+    - Flux:
+        icon: mdi-sync-alert
+        widget:
+          type: customapi
+          url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/api/v1/query?query=sum%28increase%28controller_runtime_reconcile_errors_total%7Bnamespace%3D%22flux-system%22%7D%5B1h%5D%29%29%20or%20vector%280%29
+          refreshInterval: 60000
+          mappings:
+            - field: data.result.0.value.1
+              label: Reconcile errors (1h)
+              format: number
+              scale: 1
 - Calendar:
     - Calendar:
         icon: mdi-calendar

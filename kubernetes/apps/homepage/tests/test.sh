@@ -98,7 +98,7 @@ prom_base='http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:
 urldecode() { printf '%b' "${1//%/\\x}"; }
 cluster=$(echo "$services" | yq e '.[] | select(has("Cluster")) | .Cluster' -)
 [ -n "$cluster" ] || { echo "FAIL: Cluster group missing"; exit 1; }
-[ "$(echo "$cluster" | yq e 'length' -)" = "5" ] || { echo "FAIL: expected exactly 5 Cluster tiles"; exit 1; }
+[ "$(echo "$cluster" | yq e 'length' -)" = "6" ] || { echo "FAIL: expected exactly 6 Cluster tiles"; exit 1; }
 [ "$(echo "$cluster" | yq e '[.[] | to_entries | .[].value.widget.type] | unique | join(",")' -)" = "customapi" ] || { echo "FAIL: every Cluster tile must be a customapi widget"; exit 1; }
 echo "$cluster" | yq e '.[] | to_entries | .[].value.widget.url' - | while IFS= read -r u; do
   case "$u" in
