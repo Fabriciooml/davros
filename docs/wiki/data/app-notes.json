@@ -22,6 +22,7 @@
   "qbittorrent": {"category": "media", "description": "Torrent client. Shares the data pool with the arr apps for hardlinked imports."},
   "radarr": {"category": "media", "description": "Movie collection manager."},
   "samsa": {"category": "own apps", "description": "samsa. Own app; follows new image builds automatically."},
+  "securo": {"category": "apps", "description": "Self-hosted personal finance manager with Pluggy bank sync. LAN only. Pinned images; upgrade by bumping the digests."},
   "sonarr": {"category": "media", "description": "TV series collection manager. Hardlinks imports from qBittorrent."},
   "vaultwarden": {"category": "apps", "description": "Self-hosted Bitwarden-compatible password manager."},
   "wiki": {"category": "apps", "description": "This wiki. nginx serves docs/wiki straight from the repo; git-sync pulls main every minute. LAN only."}

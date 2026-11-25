@@ -1,0 +1,195 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celery-worker
+  namespace: securo
+spec:
+  replicas: 1
+  progressDeadlineSeconds: 1200
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: celery-worker
+  template:
+    metadata:
+      labels:
+        app: celery-worker
+    spec:
+      enableServiceLinks: false
+      initContainers:
+        - name: wait-schema
+          image: ghcr.io/securo-finance/securo-backend:0.22.0@sha256:b993682d9d99079695e1009ee3c95dc5190f46ef7416d2bf0968baa4d619610e
+          command: ["sh", "-c", "until alembic current --check-heads; do echo waiting for migrations; sleep 3; done"]
+          envFrom:
+            - configMapRef:
+                name: securo-config
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: securo-secrets
+                  key: POSTGRES_PASSWORD
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: securo-secrets
+                  key: SECRET_KEY
+            - name: PLUGGY_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: securo-secrets
+                  key: PLUGGY_CLIENT_ID
+            - name: PLUGGY_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: securo-secrets
+                  key: PLUGGY_CLIENT_SECRET
+            - name: DATABASE_URL
+              value: postgresql+asyncpg://postgres:$(POSTGRES_PASSWORD)@db:5432/securo
+      containers:
+        - name: celery-worker
+          image: ghcr.io/securo-finance/securo-backend:0.22.0@sha256:b993682d9d99079695e1009ee3c95dc5190f46ef7416d2bf0968baa4d619610e
+          command: ["celery", "-A", "app.worker", "worker", "--loglevel=info", "--concurrency=2"]
+          envFrom:
+            - configMapRef:
+                name: securo-config
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: securo-secrets
+                  key: POSTGRES_PASSWORD
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: securo-secrets
+                  key: SECRET_KEY
+            - name: PLUGGY_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: securo-secrets
+                  key: PLUGGY_CLIENT_ID
+            - name: PLUGGY_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: securo-secrets
+                  key: PLUGGY_CLIENT_SECRET
+            - name: DATABASE_URL
+              value: postgresql+asyncpg://postgres:$(POSTGRES_PASSWORD)@db:5432/securo
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 1Gi
+          volumeMounts:
+            - name: attachments
+              mountPath: /app/data/attachments
+            - name: backups
+              mountPath: /app/data/backups
+      volumes:
+        - name: attachments
+          persistentVolumeClaim:
+            claimName: securo-attachments
+        - name: backups
+          persistentVolumeClaim:
+            claimName: securo-backups
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celery-beat
+  namespace: securo
+spec:
+  replicas: 1
+  progressDeadlineSeconds: 1200
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: celery-beat
+  template:
+    metadata:
+      labels:
+        app: celery-beat
+    spec:
+      enableServiceLinks: false
+      initContainers:
+        - name: wait-schema
+          image: ghcr.io/securo-finance/securo-backend:0.22.0@sha256:b993682d9d99079695e1009ee3c95dc5190f46ef7416d2bf0968baa4d619610e
+          command: ["sh", "-c", "until alembic current --check-heads; do echo waiting for migrations; sleep 3; done"]
+          envFrom:
+            - configMapRef:
+                name: securo-config
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: securo-secrets
+                  key: POSTGRES_PASSWORD
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: securo-secrets
+                  key: SECRET_KEY
+            - name: PLUGGY_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: securo-secrets
+                  key: PLUGGY_CLIENT_ID
+            - name: PLUGGY_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: securo-secrets
+                  key: PLUGGY_CLIENT_SECRET
+            - name: DATABASE_URL
+              value: postgresql+asyncpg://postgres:$(POSTGRES_PASSWORD)@db:5432/securo
+      containers:
+        - name: celery-beat
+          image: ghcr.io/securo-finance/securo-backend:0.22.0@sha256:b993682d9d99079695e1009ee3c95dc5190f46ef7416d2bf0968baa4d619610e
+          command: ["celery", "-A", "app.worker", "beat", "--loglevel=info"]
+          envFrom:
+            - configMapRef:
+                name: securo-config
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: securo-secrets
+                  key: POSTGRES_PASSWORD
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: securo-secrets
+                  key: SECRET_KEY
+            - name: PLUGGY_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: securo-secrets
+                  key: PLUGGY_CLIENT_ID
+            - name: PLUGGY_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: securo-secrets
+                  key: PLUGGY_CLIENT_SECRET
+            - name: DATABASE_URL
+              value: postgresql+asyncpg://postgres:$(POSTGRES_PASSWORD)@db:5432/securo
+          resources:
+            requests:
+              cpu: 20m
+              memory: 128Mi
+            limits:
+              memory: 256Mi
+          volumeMounts:
+            - name: attachments
+              mountPath: /app/data/attachments
+            - name: backups
+              mountPath: /app/data/backups
+      volumes:
+        - name: attachments
+          persistentVolumeClaim:
+            claimName: securo-attachments
+        - name: backups
+          persistentVolumeClaim:
+            claimName: securo-backups

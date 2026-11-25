@@ -1,0 +1,127 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: securo
+spec:
+  replicas: 1
+  progressDeadlineSeconds: 1200
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      enableServiceLinks: false
+      initContainers:
+        - name: migrate
+          image: ghcr.io/securo-finance/securo-backend:0.22.0@sha256:b993682d9d99079695e1009ee3c95dc5190f46ef7416d2bf0968baa4d619610e
+          command: ["alembic", "upgrade", "head"]
+          envFrom:
+            - configMapRef:
+                name: securo-config
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: securo-secrets
+                  key: POSTGRES_PASSWORD
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: securo-secrets
+                  key: SECRET_KEY
+            - name: PLUGGY_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: securo-secrets
+                  key: PLUGGY_CLIENT_ID
+            - name: PLUGGY_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: securo-secrets
+                  key: PLUGGY_CLIENT_SECRET
+            - name: DATABASE_URL
+              value: postgresql+asyncpg://postgres:$(POSTGRES_PASSWORD)@db:5432/securo
+      containers:
+        - name: backend
+          image: ghcr.io/securo-finance/securo-backend:0.22.0@sha256:b993682d9d99079695e1009ee3c95dc5190f46ef7416d2bf0968baa4d619610e
+          command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: securo-config
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: securo-secrets
+                  key: POSTGRES_PASSWORD
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: securo-secrets
+                  key: SECRET_KEY
+            - name: PLUGGY_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: securo-secrets
+                  key: PLUGGY_CLIENT_ID
+            - name: PLUGGY_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: securo-secrets
+                  key: PLUGGY_CLIENT_SECRET
+            - name: DATABASE_URL
+              value: postgresql+asyncpg://postgres:$(POSTGRES_PASSWORD)@db:5432/securo
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 8000
+            periodSeconds: 10
+            timeoutSeconds: 6
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 8000
+            initialDelaySeconds: 120
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 1Gi
+          volumeMounts:
+            - name: attachments
+              mountPath: /app/data/attachments
+            - name: backups
+              mountPath: /app/data/backups
+      volumes:
+        - name: attachments
+          persistentVolumeClaim:
+            claimName: securo-attachments
+        - name: backups
+          persistentVolumeClaim:
+            claimName: securo-backups
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: securo
+spec:
+  selector:
+    app: backend
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000

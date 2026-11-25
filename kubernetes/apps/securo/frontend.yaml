@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: securo
+spec:
+  replicas: 1
+  progressDeadlineSeconds: 600
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: frontend
+          image: ghcr.io/securo-finance/securo-frontend:0.22.0@sha256:5ecbe79a212c5f1a92c83e80aff5419a2b8942e9cda42f5278142a618caf5316
+          ports:
+            - containerPort: 8080
+          env:
+            - name: BACKEND_URL
+              value: http://backend.securo.svc.cluster.local:8000
+            - name: FRONTEND_URL
+              value: https://securo.local.fabriciooml.dev
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: securo
+spec:
+  selector:
+    app: frontend
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080

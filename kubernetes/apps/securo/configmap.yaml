@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: securo-config
+  namespace: securo
+data:
+  DEBUG: "false"
+  TZ: America/Sao_Paulo
+  FRONTEND_URL: https://securo.local.fabriciooml.dev
+  REDIS_URL: redis://redis:6379/0
+  STORAGE_PROVIDER: local
+  STORAGE_LOCAL_PATH: /app/data/attachments
+  # Traefik -> nginx(frontend) -> backend: two proxy hops.
+  TRUSTED_PROXY_HOPS: "2"
+  AGENTS_ENABLED: "false"
+  PLUGINS_ENABLED: "false"
+  OIDC_ENABLED: "false"
+  SIMPLEFIN_ENABLED: "false"
+  LOCAL_AUTH_ENABLED: "true"

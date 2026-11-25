@@ -25,6 +25,7 @@ resources:
   - qbittorrent
   - radarr
   - samsa
+  - securo
   - sonarr
   - vaultwarden
   - wiki

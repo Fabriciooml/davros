@@ -1,0 +1,15 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: securo
+  namespace: securo
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`securo.local.fabriciooml.dev`)
+      kind: Rule
+      services:
+        - name: frontend
+          port: 8080
+  tls: {}

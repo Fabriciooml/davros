@@ -657,6 +657,57 @@
       ]
     },
     {
+      "category": "apps",
+      "description": "Self-hosted personal finance manager with Pluggy bank sync. LAN only. Pinned images; upgrade by bumping the digests.",
+      "hosts": [
+        {
+          "host": "securo.local.<domain>",
+          "visibility": "lan"
+        }
+      ],
+      "images": [
+        {
+          "pinned": true,
+          "repo": "ghcr.io/securo-finance/securo-backend",
+          "tag": "0.22.0"
+        },
+        {
+          "pinned": true,
+          "repo": "ghcr.io/securo-finance/securo-frontend",
+          "tag": "0.22.0"
+        },
+        {
+          "pinned": true,
+          "repo": "pgvector/pgvector",
+          "tag": "pg16"
+        },
+        {
+          "pinned": true,
+          "repo": "redis",
+          "tag": "8-alpine"
+        }
+      ],
+      "lan": true,
+      "name": "securo",
+      "namespace": "securo",
+      "public": false,
+      "stateful": true,
+      "storage": [
+        {
+          "name": "securo-attachments",
+          "size": "2Gi"
+        },
+        {
+          "name": "securo-backups",
+          "size": "1Gi"
+        },
+        {
+          "name": "securo-db",
+          "size": "5Gi"
+        }
+      ]
+    },
+    {
       "category": "media",
       "description": "TV series collection manager. Hardlinks imports from qBittorrent.",
       "hosts": [
