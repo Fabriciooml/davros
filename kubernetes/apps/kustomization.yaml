@@ -4,6 +4,7 @@ resources:
   - arr
   - audiobookrequest
   - audiobookshelf
+  - barcodebuddy
   - bazarr
   - chaptarr
   - cloudflared
@@ -12,6 +13,7 @@ resources:
   - couchdb
   - cwa
   - flaresolverr
+  - grocy
   - homepage
   - jellyfin
   - kafka

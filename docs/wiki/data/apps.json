@@ -65,6 +65,34 @@
       ]
     },
     {
+      "category": "apps",
+      "description": "Barcode scanning front-end for Grocy.",
+      "hosts": [
+        {
+          "host": "barcodebuddy.local.<domain>",
+          "visibility": "lan"
+        }
+      ],
+      "images": [
+        {
+          "pinned": true,
+          "repo": "f0rc3/barcodebuddy-docker",
+          "tag": "v1.8.1.5"
+        }
+      ],
+      "lan": true,
+      "name": "barcodebuddy",
+      "namespace": "barcodebuddy",
+      "public": false,
+      "stateful": true,
+      "storage": [
+        {
+          "name": "barcodebuddy-config",
+          "size": "256Mi"
+        }
+      ]
+    },
+    {
       "category": "media",
       "description": "Subtitle manager for Sonarr and Radarr libraries.",
       "hosts": [
@@ -274,6 +302,34 @@
       "public": false,
       "stateful": false,
       "storage": []
+    },
+    {
+      "category": "apps",
+      "description": "Pantry stock, expiry and shopping list.",
+      "hosts": [
+        {
+          "host": "grocy.local.<domain>",
+          "visibility": "lan"
+        }
+      ],
+      "images": [
+        {
+          "pinned": true,
+          "repo": "lscr.io/linuxserver/grocy",
+          "tag": "v4.7.1-ls352"
+        }
+      ],
+      "lan": true,
+      "name": "grocy",
+      "namespace": "grocy",
+      "public": false,
+      "stateful": true,
+      "storage": [
+        {
+          "name": "grocy-config",
+          "size": "1Gi"
+        }
+      ]
     },
     {
       "category": "apps",

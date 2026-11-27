@@ -38,7 +38,7 @@ echo "$route" | grep -qF 'Host(`home.local.fabriciooml.dev`)' || { echo "FAIL: L
 echo "$built" | yq e 'select(.kind == "ServiceAccount" or .kind == "ClusterRole" or .kind == "ClusterRoleBinding")' - | grep -q . && { echo "FAIL: no RBAC in the POC"; exit 1; }
 
 services=$(echo "$cm" | yq e '.data["services.yaml"]' -)
-[ "$(echo "$services" | yq e '[.[] | to_entries | .[].value[] | to_entries | .[].value | select(has("href"))] | length' -)" = "26" ] || { echo "FAIL: expected exactly 26 link tiles (tiles with an href)"; exit 1; }
+[ "$(echo "$services" | yq e '[.[] | to_entries | .[].value[] | to_entries | .[].value | select(has("href"))] | length' -)" = "28" ] || { echo "FAIL: expected exactly 28 link tiles (tiles with an href)"; exit 1; }
 nohref=$(echo "$services" | yq e '.[] | to_entries | .[].value[] | to_entries | .[].value | select(has("href") | not) | .widget.type' -)
 [ -z "$nohref" ] || [ -z "$(echo "$nohref" | sort -u | grep -vxE 'calendar|customapi' || true)" ] || { echo "FAIL: a tile without href must be a calendar or customapi widget"; exit 1; }
 
@@ -120,5 +120,22 @@ done
 echo "$groups" | while IFS= read -r g; do
   [ "$(echo "$settings" | G="$g" yq e '.layout | has(strenv(G))' -)" = "true" ] || { echo "FAIL: group '$g' is missing from settings layout"; exit 1; }
 done
+
+# Grocy and Barcode Buddy tiles: LAN link, in-cluster monitor, key only as a placeholder, counts via customapi size.
+for name in Grocy "Barcode Buddy"; do
+  [ "$(echo "$services" | yq e "[.[] | .[] | .[] | select(has(\"$name\"))] | length" -)" = "1" ] || { echo "FAIL: tile $name missing"; exit 1; }
+done
+echo "$services" | grep -qF 'https://grocy.local.fabriciooml.dev' || { echo "FAIL: Grocy tile must link to the LAN host"; exit 1; }
+echo "$services" | grep -qF 'http://grocy.grocy.svc.cluster.local' || { echo "FAIL: Grocy must be monitored in-cluster"; exit 1; }
+echo "$services" | grep -qF 'https://barcodebuddy.local.fabriciooml.dev' || { echo "FAIL: Barcode Buddy tile must link to the LAN host"; exit 1; }
+echo "$services" | grep -qF 'http://barcodebuddy.barcodebuddy.svc.cluster.local' || { echo "FAIL: Barcode Buddy must be monitored in-cluster"; exit 1; }
+if echo "$services" | grep -q 'GROCY-API-KEY'; then
+  echo "$services" | grep -qF 'GROCY-API-KEY: "{{HOMEPAGE_VAR_GROCY_KEY}}"' || { echo "FAIL: Grocy key must be the HOMEPAGE_VAR_GROCY_KEY placeholder"; exit 1; }
+else
+  echo "FAIL: Grocy widget must send the GROCY-API-KEY header"; exit 1
+fi
+[ "$(echo "$services" | yq e '[.[] | .[] | .[] | select(has("Grocy")) | .Grocy.widget.mappings[] | select(.format == "size")] | length' -)" = "3" ] || { echo "FAIL: Grocy widget needs three size-format (array length) mappings"; exit 1; }
+
+[ "$(echo "$services" | yq e '[.[] | .[] | .[] | select(has("Grocy")) | .Grocy.widget.mappings[].field] | sort | join(" ")' -)" = "due_products expired_products missing_products" ] || { echo "FAIL: Grocy widget fields must be due_products, expired_products, missing_products (Grocy 4.x /api/stock/volatile keys)"; exit 1; }
 
 echo "PASS"

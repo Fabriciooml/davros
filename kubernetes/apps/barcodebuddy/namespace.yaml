@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: barcodebuddy
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: ephemeral-storage-defaults
+  namespace: barcodebuddy
+spec:
+  limits:
+    - type: Container
+      defaultRequest:
+        ephemeral-storage: 100Mi
+      default:
+        ephemeral-storage: 2Gi

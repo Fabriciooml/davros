@@ -182,6 +182,30 @@
           url: http://mealie.mealie.svc.cluster.local:9000
           version: 2
           key: "{{HOMEPAGE_VAR_MEALIE_KEY}}"
+    - Grocy:
+        icon: grocy.svg
+        href: https://grocy.local.fabriciooml.dev
+        siteMonitor: http://grocy.grocy.svc.cluster.local
+        widget:
+          type: customapi
+          url: http://grocy.grocy.svc.cluster.local/api/stock/volatile
+          refreshInterval: 60000
+          headers:
+            GROCY-API-KEY: "{{HOMEPAGE_VAR_GROCY_KEY}}"
+          mappings:
+            - field: due_products
+              label: Due soon
+              format: size
+            - field: expired_products
+              label: Expired
+              format: size
+            - field: missing_products
+              label: Below min stock
+              format: size
+    - Barcode Buddy:
+        icon: mdi-barcode-scan
+        href: https://barcodebuddy.local.fabriciooml.dev
+        siteMonitor: http://barcodebuddy.barcodebuddy.svc.cluster.local
     - Vaultwarden:
         icon: vaultwarden.svg
         href: https://vault.local.fabriciooml.dev

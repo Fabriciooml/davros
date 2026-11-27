@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grocy
+  namespace: grocy
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: grocy
+  template:
+    metadata:
+      labels:
+        app: grocy
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: grocy
+          image: lscr.io/linuxserver/grocy:v4.7.1-ls352@sha256:ef5ea5094aa2ed32df74528c4bdd94713679038c97add02045d881550c2a59a8
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: America/Sao_Paulo
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            periodSeconds: 15
+            timeoutSeconds: 10
+            failureThreshold: 20
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 120
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 10
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 384Mi
+          volumeMounts:
+            - name: config
+              mountPath: /config
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: grocy-config

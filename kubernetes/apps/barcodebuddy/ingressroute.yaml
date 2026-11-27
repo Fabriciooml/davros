@@ -1,0 +1,15 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: barcodebuddy
+  namespace: barcodebuddy
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`barcodebuddy.local.fabriciooml.dev`)
+      kind: Rule
+      services:
+        - name: barcodebuddy
+          port: 80
+  tls: {}

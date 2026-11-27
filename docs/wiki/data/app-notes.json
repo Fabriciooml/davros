@@ -1,6 +1,7 @@
 {
   "audiobookrequest": {"category": "media", "description": "Request portal for audiobooks. Approved requests are searched and imported through Chaptarr."},
   "audiobookshelf": {"category": "media", "description": "Audiobook library and player with progress sync. Reads the audiobooks Chaptarr imports."},
+  "barcodebuddy": {"category": "apps", "description": "Barcode scanning front-end for Grocy."},
   "bazarr": {"category": "media", "description": "Subtitle manager for Sonarr and Radarr libraries."},
   "chaptarr": {"category": "media", "description": "Readarr-style book manager (beta). Searches through Prowlarr, downloads with qBittorrent, imports audiobooks for Audiobookshelf and hardlinks ebooks into the CWA ingest folder."},
   "cloudflared": {"category": "apps", "description": "Tunnel client exposing selected apps publicly."},
@@ -9,6 +10,7 @@
   "couchdb": {"category": "data", "description": "CouchDB backing the Obsidian live-sync vault."},
   "cwa": {"category": "media", "description": "Calibre-Web Automated: ebook library with OPDS and KOReader sync. Imports whatever lands in its ingest folder."},
   "flaresolverr": {"category": "media", "description": "Cloudflare-challenge solver proxy used by Prowlarr."},
+  "grocy": {"category": "apps", "description": "Pantry stock, expiry and shopping list."},
   "homepage": {"category": "apps", "description": "LAN start page (gethomepage) with a tile and status dot for every app, plus live widgets where an API key is set. Config lives as files in kubernetes/apps/homepage/config; LAN only."},
   "jellyfin": {"category": "media", "description": "Media server for movies and shows with GPU transcoding."},
   "kafka": {"category": "data", "description": "Single-broker Apache Kafka with a Kafka UI for browsing topics."},

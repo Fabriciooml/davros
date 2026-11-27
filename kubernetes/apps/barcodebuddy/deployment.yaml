@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: barcodebuddy
+  namespace: barcodebuddy
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: barcodebuddy
+  template:
+    metadata:
+      labels:
+        app: barcodebuddy
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: barcodebuddy
+          image: f0rc3/barcodebuddy-docker:v1.8.1.5@sha256:e08ebabe344ed47c686e84ec364c2291dbc4dc28242f8033f53f771f038a843c
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: America/Sao_Paulo
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            periodSeconds: 15
+            timeoutSeconds: 10
+            failureThreshold: 20
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 120
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 10
+          resources:
+            requests:
+              cpu: 20m
+              memory: 64Mi
+            limits:
+              memory: 192Mi
+          volumeMounts:
+            - name: config
+              mountPath: /config
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: barcodebuddy-config
