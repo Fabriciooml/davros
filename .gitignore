@@ -9,8 +9,7 @@
 *.tfvars
 !*.tfvars.example
 
-# Talos / kubernetes credentials - these live in ~/.talos and ~/.kube, never in-repo
-talosconfig
+# kubernetes credentials - these live in ~/.kube, never in-repo
 kubeconfig
 *.kubeconfig
 

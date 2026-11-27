@@ -19,6 +19,7 @@ resources:
   - kafka
   - mapa
   - mealie
+  - ministry-of-truth
   - muad-dib
   - overseerr
   - plex

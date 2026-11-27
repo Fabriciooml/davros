@@ -486,6 +486,34 @@
     },
     {
       "category": "own apps",
+      "description": "ministry_of_truth. Daily newspaper: weather, agenda, releases, homelab status and news. Own app; follows new image builds automatically.",
+      "hosts": [
+        {
+          "host": "news.local.<domain>",
+          "visibility": "lan"
+        }
+      ],
+      "images": [
+        {
+          "pinned": false,
+          "repo": "ghcr.io/fabriciooml/ministry_of_truth",
+          "tag": "main"
+        }
+      ],
+      "lan": true,
+      "name": "ministry-of-truth",
+      "namespace": "ministry-of-truth",
+      "public": false,
+      "stateful": true,
+      "storage": [
+        {
+          "name": "ministry-of-truth-data",
+          "size": "1Gi"
+        }
+      ]
+    },
+    {
+      "category": "own apps",
       "description": "muad_dib. Own app; follows new image builds automatically.",
       "hosts": [
         {

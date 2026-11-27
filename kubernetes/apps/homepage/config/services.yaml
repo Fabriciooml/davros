@@ -114,6 +114,10 @@
           url: http://cwa.cwa.svc.cluster.local:8083
           username: "{{HOMEPAGE_VAR_CWA_USER}}"
           password: "{{HOMEPAGE_VAR_CWA_PASS}}"
+    - Ministry of Truth:
+        icon: mdi-newspaper-variant-outline
+        href: https://news.local.fabriciooml.dev
+        siteMonitor: http://ministry-of-truth.ministry-of-truth.svc.cluster.local
 - Requests and automation:
     - Overseerr:
         icon: overseerr.svg

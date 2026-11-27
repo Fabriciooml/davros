@@ -38,7 +38,7 @@ echo "$route" | grep -qF 'Host(`home.local.fabriciooml.dev`)' || { echo "FAIL: L
 echo "$built" | yq e 'select(.kind == "ServiceAccount" or .kind == "ClusterRole" or .kind == "ClusterRoleBinding")' - | grep -q . && { echo "FAIL: no RBAC in the POC"; exit 1; }
 
 services=$(echo "$cm" | yq e '.data["services.yaml"]' -)
-[ "$(echo "$services" | yq e '[.[] | to_entries | .[].value[] | to_entries | .[].value | select(has("href"))] | length' -)" = "28" ] || { echo "FAIL: expected exactly 28 link tiles (tiles with an href)"; exit 1; }
+[ "$(echo "$services" | yq e '[.[] | to_entries | .[].value[] | to_entries | .[].value | select(has("href"))] | length' -)" = "29" ] || { echo "FAIL: expected exactly 29 link tiles (tiles with an href)"; exit 1; }
 nohref=$(echo "$services" | yq e '.[] | to_entries | .[].value[] | to_entries | .[].value | select(has("href") | not) | .widget.type' -)
 [ -z "$nohref" ] || [ -z "$(echo "$nohref" | sort -u | grep -vxE 'calendar|customapi' || true)" ] || { echo "FAIL: a tile without href must be a calendar or customapi widget"; exit 1; }
 

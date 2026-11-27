@@ -16,6 +16,7 @@
   "kafka": {"category": "data", "description": "Single-broker Apache Kafka with a Kafka UI for browsing topics."},
   "mapa": {"category": "own apps", "description": "Nosso Mapa: shared map app, frontend plus backend. Own app; follows new image builds."},
   "mealie": {"category": "apps", "description": "Recipe manager and meal planner."},
+  "ministry-of-truth": {"category": "own apps", "description": "ministry_of_truth. Daily newspaper: weather, agenda, releases, homelab status and news. Own app; follows new image builds automatically."},
   "muad-dib": {"category": "own apps", "description": "muad_dib. Own app; follows new image builds automatically."},
   "overseerr": {"category": "media", "description": "Seerr request portal: household asks for movies and shows here."},
   "plex": {"category": "media", "description": "Media server for movies and shows."},

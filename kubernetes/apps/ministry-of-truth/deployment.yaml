@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ministry-of-truth
+  namespace: ministry-of-truth
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  progressDeadlineSeconds: 1200
+  selector:
+    matchLabels:
+      app: ministry-of-truth
+  template:
+    metadata:
+      labels:
+        app: ministry-of-truth
+      annotations:
+        fabriciooml.dev/image-digest: sha256:0000000000000000000000000000000000000000000000000000000000000000 # {"$imagepolicy": "flux-system:ministry-of-truth:digest"}
+    spec:
+      enableServiceLinks: false
+      securityContext:
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+      containers:
+        - name: ministry-of-truth
+          image: ghcr.io/fabriciooml/ministry_of_truth:main
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+          env:
+            - name: TZ
+              value: America/Sao_Paulo
+            - name: DATA_DIR
+              value: /data
+            - name: FERNET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ministry-of-truth-secrets
+                  key: FERNET_KEY
+            - name: SESSION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: ministry-of-truth-secrets
+                  key: SESSION_SECRET
+            - name: SONARR_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ministry-of-truth-secrets
+                  key: SONARR_KEY
+            - name: RADARR_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ministry-of-truth-secrets
+                  key: RADARR_KEY
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            periodSeconds: 15
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 5
+          resources:
+            requests:
+              cpu: 25m
+              memory: 128Mi
+            limits:
+              memory: 384Mi
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: ministry-of-truth-data
