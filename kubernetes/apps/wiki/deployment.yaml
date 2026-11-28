@@ -54,6 +54,7 @@ spec:
             - --period=60s
             - --root=/git
             - --link=current
+            - --git-config=safe.directory:/git
           resources:
             requests:
               cpu: 10m
