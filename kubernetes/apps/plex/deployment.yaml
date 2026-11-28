@@ -19,7 +19,7 @@ spec:
       enableServiceLinks: false
       containers:
         - name: plex
-          image: plexinc/pms-docker:1.43.0.10492-121068a07@sha256:1131c4cd21fa22f8196f749f1dbb69af306776c3c83c7f5b061e51dc49bcff7f
+          image: plexinc/pms-docker:1.43.5.11079-b3b13e506@sha256:6d778d41daae68f89115aa87a44ae14a96b23e71a2093da173b5a9aac4091336
           env:
             - name: PLEX_UID
               value: "1000"

@@ -8,7 +8,7 @@ echo "$built" | kubeconform -strict -ignore-missing-schemas -summary
 
 dep=$(echo "$built" | yq e 'select(.kind == "Deployment" and .metadata.name == "couchdb")' -)
 [ -n "$dep" ] || { echo "FAIL: no Deployment couchdb"; exit 1; }
-[ "$(echo "$dep" | yq e '.spec.template.spec.containers[0].image' -)" = "couchdb:3.5.1@sha256:297cd556c7ba358a408fd009e7b8e3b91318ccfc4d57c9b0264a2fb051ad9ef7" ] || { echo "FAIL: image must stay pinned to the 3.5.1 digest"; exit 1; }
+[ "$(echo "$dep" | yq e '.spec.template.spec.containers[0].image' -)" = "couchdb:3.5.3@sha256:0ba6b4b8dd823232185fa2c7de04634b925be62f97c9b7cbece7dd9119470e17" ] || { echo "FAIL: image must stay pinned to the 3.5.1 digest"; exit 1; }
 [ "$(echo "$dep" | yq e '.spec.strategy.type' -)" = "Recreate" ] || { echo "FAIL: RWO volume needs Recreate"; exit 1; }
 [ "$(echo "$dep" | yq e '.spec.template.spec.enableServiceLinks' -)" = "false" ] || { echo "FAIL: service-link env vars must be off"; exit 1; }
 [ "$(echo "$dep" | yq e '.spec.progressDeadlineSeconds' -)" = "1200" ] || { echo "FAIL: progressDeadlineSeconds must be 1200"; exit 1; }

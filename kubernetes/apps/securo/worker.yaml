@@ -19,7 +19,7 @@ spec:
       enableServiceLinks: false
       initContainers:
         - name: wait-schema
-          image: ghcr.io/securo-finance/securo-backend:0.22.0@sha256:b993682d9d99079695e1009ee3c95dc5190f46ef7416d2bf0968baa4d619610e
+          image: ghcr.io/securo-finance/securo-backend:0.23.0@sha256:13e9187d2a89f9724776df4ebb92afa56d159eb947ca57cb8c7d1e5d6f6d1277
           command: ["sh", "-c", "until alembic current --check-heads; do echo waiting for migrations; sleep 3; done"]
           envFrom:
             - configMapRef:
@@ -49,7 +49,7 @@ spec:
               value: postgresql+asyncpg://postgres:$(POSTGRES_PASSWORD)@db:5432/securo
       containers:
         - name: celery-worker
-          image: ghcr.io/securo-finance/securo-backend:0.22.0@sha256:b993682d9d99079695e1009ee3c95dc5190f46ef7416d2bf0968baa4d619610e
+          image: ghcr.io/securo-finance/securo-backend:0.23.0@sha256:13e9187d2a89f9724776df4ebb92afa56d159eb947ca57cb8c7d1e5d6f6d1277
           command: ["celery", "-A", "app.worker", "worker", "--loglevel=info", "--concurrency=2"]
           envFrom:
             - configMapRef:
@@ -117,7 +117,7 @@ spec:
       enableServiceLinks: false
       initContainers:
         - name: wait-schema
-          image: ghcr.io/securo-finance/securo-backend:0.22.0@sha256:b993682d9d99079695e1009ee3c95dc5190f46ef7416d2bf0968baa4d619610e
+          image: ghcr.io/securo-finance/securo-backend:0.23.0@sha256:13e9187d2a89f9724776df4ebb92afa56d159eb947ca57cb8c7d1e5d6f6d1277
           command: ["sh", "-c", "until alembic current --check-heads; do echo waiting for migrations; sleep 3; done"]
           envFrom:
             - configMapRef:
@@ -147,7 +147,7 @@ spec:
               value: postgresql+asyncpg://postgres:$(POSTGRES_PASSWORD)@db:5432/securo
       containers:
         - name: celery-beat
-          image: ghcr.io/securo-finance/securo-backend:0.22.0@sha256:b993682d9d99079695e1009ee3c95dc5190f46ef7416d2bf0968baa4d619610e
+          image: ghcr.io/securo-finance/securo-backend:0.23.0@sha256:13e9187d2a89f9724776df4ebb92afa56d159eb947ca57cb8c7d1e5d6f6d1277
           command: ["celery", "-A", "app.worker", "beat", "--loglevel=info"]
           envFrom:
             - configMapRef:

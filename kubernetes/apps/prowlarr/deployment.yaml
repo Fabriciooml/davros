@@ -19,7 +19,7 @@ spec:
       enableServiceLinks: false
       containers:
         - name: prowlarr
-          image: ghcr.io/hotio/prowlarr:release-2.5.2.5491@sha256:7f8321ee71b97bc023ffecacda0fd20bb04493d5020ed0b1fe27cb6cfa92272e
+          image: ghcr.io/hotio/prowlarr:release-3.1.0.5799@sha256:d1a74dffb508d82157196df2d6cb177c1dac97fcb6350de11ae2f991d5a5f307
           env:
             - name: PUID
               value: "1000"

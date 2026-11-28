@@ -67,7 +67,7 @@ for kv in DEBUG=false AGENTS_ENABLED=false PLUGINS_ENABLED=false OIDC_ENABLED=fa
   [ "$(echo "$cm" | yq e ".data.${kv%%=*}" -)" = "${kv#*=}" ] || fail "securo-config ${kv%%=*} must be ${kv#*=}"
 done
 
-BACKEND='ghcr.io/securo-finance/securo-backend:0.22.0@sha256:b993682d9d99079695e1009ee3c95dc5190f46ef7416d2bf0968baa4d619610e'
+BACKEND='ghcr.io/securo-finance/securo-backend:0.23.0@sha256:13e9187d2a89f9724776df4ebb92afa56d159eb947ca57cb8c7d1e5d6f6d1277'
 
 be=$(dep backend)
 [ "$(echo "$be" | yq e '.spec.template.spec.containers[0].image' -)" = "$BACKEND" ] || fail "backend image pin"
@@ -98,7 +98,7 @@ done
 [ "$(dep celery-beat | yq e '.spec.template.spec.containers[0].command | join(" ")' -)" = "celery -A app.worker beat --loglevel=info" ] || fail "beat command"
 [ "$(echo "$built" | yq e 'select(.kind == "Service" and .metadata.name == "backend") | .spec.ports[0].port' -)" = "8000" ] || fail "Service backend 8000"
 
-FRONTEND='ghcr.io/securo-finance/securo-frontend:0.22.0@sha256:5ecbe79a212c5f1a92c83e80aff5419a2b8942e9cda42f5278142a618caf5316'
+FRONTEND='ghcr.io/securo-finance/securo-frontend:0.23.0@sha256:51854f000ee0ebf76deff9e68f95b8564f8cbb2d7c2ec9bc0be1ea3041dffd7d'
 fe=$(dep frontend)
 [ "$(echo "$fe" | yq e '.spec.template.spec.containers[0].image' -)" = "$FRONTEND" ] || fail "frontend image pin"
 [ "$(echo "$fe" | yq e '.spec.template.spec.containers[0].env[] | select(.name == "BACKEND_URL") | .value' -)" = "http://backend.securo.svc.cluster.local:8000" ] || fail "frontend BACKEND_URL must be the FQDN (nginx resolver ignores search domains)"

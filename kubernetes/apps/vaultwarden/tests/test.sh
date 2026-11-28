@@ -9,7 +9,7 @@ echo "$built" | kubeconform -strict -ignore-missing-schemas -summary
 dep=$(echo "$built" | yq e 'select(.kind == "Deployment" and .metadata.name == "vaultwarden")' -)
 [ -n "$dep" ] || { echo "FAIL: no Deployment vaultwarden"; exit 1; }
 [ "$(echo "$dep" | yq e '.metadata.namespace' -)" = "vaultwarden" ] || { echo "FAIL: must live in vaultwarden"; exit 1; }
-echo "$dep" | yq e '.spec.template.spec.containers[0].image' - | grep -Eq '^vaultwarden/server:1\.37\.4@sha256:[0-9a-f]{64}$' || { echo "FAIL: image must be pinned to 1.37.4 with a digest"; exit 1; }
+echo "$dep" | yq e '.spec.template.spec.containers[0].image' - | grep -Eq '^vaultwarden/server:1\.37\.5@sha256:[0-9a-f]{64}$' || { echo "FAIL: image must be pinned to 1.37.5 with a digest"; exit 1; }
 [ "$(echo "$dep" | yq e '.spec.strategy.type' -)" = "Recreate" ] || { echo "FAIL: RWO volume needs Recreate"; exit 1; }
 [ "$(echo "$dep" | yq e '.spec.template.spec.enableServiceLinks' -)" = "false" ] || { echo "FAIL: service-link env vars must be off"; exit 1; }
 [ "$(echo "$dep" | yq e '.spec.replicas' -)" = "1" ] || { echo "FAIL: replicas must be 1 after cutover"; exit 1; }

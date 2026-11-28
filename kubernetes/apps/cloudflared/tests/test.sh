@@ -9,7 +9,7 @@ echo "$built" | kubeconform -strict -ignore-missing-schemas -skip Secret -summar
 dep=$(echo "$built" | yq e 'select(.kind == "Deployment" and .metadata.name == "cloudflared")' -)
 [ -n "$dep" ] || { echo "FAIL: no Deployment cloudflared"; exit 1; }
 [ "$(echo "$dep" | yq e '.metadata.namespace' -)" = "cloudflared" ] || { echo "FAIL: must live in cloudflared"; exit 1; }
-echo "$dep" | yq e '.spec.template.spec.containers[0].image' - | grep -Eq '^cloudflare/cloudflared:2026\.2\.0@sha256:[0-9a-f]{64}$' || { echo "FAIL: image must be pinned to 2026.2.0 with a digest"; exit 1; }
+echo "$dep" | yq e '.spec.template.spec.containers[0].image' - | grep -Eq '^cloudflare/cloudflared:2026\.11\.2@sha256:[0-9a-f]{64}$' || { echo "FAIL: image must be pinned to 2026.11.2 with a digest"; exit 1; }
 [ "$(echo "$dep" | yq e '.spec.template.spec.enableServiceLinks' -)" = "false" ] || { echo "FAIL: service-link env vars must be off"; exit 1; }
 [ "$(echo "$dep" | yq e '.spec.replicas' -)" = "1" ] || { echo "FAIL: replicas must be 1"; exit 1; }
 [ "$(echo "$dep" | yq e '.spec.template.spec.containers[0].env[] | select(.name == "TUNNEL_TOKEN") | .valueFrom.secretKeyRef.name' -)" = "cloudflared-token" ] || { echo "FAIL: TUNNEL_TOKEN must come from the cloudflared-token secret"; exit 1; }

@@ -19,7 +19,7 @@ spec:
       enableServiceLinks: false
       containers:
         - name: qbittorrent
-          image: ghcr.io/hotio/qbittorrent:release-5.2.3@sha256:fbff489ebe410ad4be3e86294298f40ccefb2cb410ccf2847f7c5819171dfb56
+          image: ghcr.io/hotio/qbittorrent:release-5.3.1@sha256:77ee95229e046c9046af8745f3c4445c62c3863ff8813e19f286056fd0b32dd9
           env:
             - name: PUID
               value: "1000"

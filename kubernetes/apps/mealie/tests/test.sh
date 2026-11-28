@@ -8,7 +8,7 @@ echo "$built" | kubeconform -strict -ignore-missing-schemas -summary
 
 dep=$(echo "$built" | yq e 'select(.kind == "Deployment" and .metadata.name == "mealie")' -)
 [ -n "$dep" ] || { echo "FAIL: no Deployment mealie"; exit 1; }
-[ "$(echo "$dep" | yq e '.spec.template.spec.containers[0].image' -)" = "ghcr.io/mealie-recipes/mealie:v3.16.0@sha256:74496aed2c5055e3b7b6c4e1bb9b4f16b1f566601582b258a10bae851f19ac24" ] || { echo "FAIL: image must stay pinned to the v3.16.0 digest"; exit 1; }
+[ "$(echo "$dep" | yq e '.spec.template.spec.containers[0].image' -)" = "ghcr.io/mealie-recipes/mealie:v3.31.0@sha256:97e21ac96e9a8d1ee15aaf558ba3f14998936b9d6f334e40ebb4c6c2127dc12f" ] || { echo "FAIL: image must stay pinned to the v3.16.0 digest"; exit 1; }
 [ "$(echo "$dep" | yq e '.spec.strategy.type' -)" = "Recreate" ] || { echo "FAIL: RWO volume needs Recreate"; exit 1; }
 [ "$(echo "$dep" | yq e '.spec.template.spec.enableServiceLinks' -)" = "false" ] || { echo "FAIL: service-link env vars must be off"; exit 1; }
 [ "$(echo "$dep" | yq e '.spec.progressDeadlineSeconds' -)" = "1200" ] || { echo "FAIL: progressDeadlineSeconds must be 1200"; exit 1; }

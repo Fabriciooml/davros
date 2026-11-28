@@ -9,7 +9,7 @@ echo "$built" | kubeconform -strict -ignore-missing-schemas -summary
 dep=$(echo "$built" | yq e 'select(.kind == "Deployment" and .metadata.name == "audiobookshelf")' -)
 [ -n "$dep" ] || { echo "FAIL: no Deployment audiobookshelf"; exit 1; }
 [ "$(echo "$dep" | yq e '.metadata.namespace' -)" = "audiobookshelf" ] || { echo "FAIL: must live in audiobookshelf"; exit 1; }
-echo "$dep" | yq e '.spec.template.spec.containers[0].image' - | grep -Eq '^ghcr\.io/advplyr/audiobookshelf:2\.37\.2@sha256:b897c33f05972fb1bf484f7487bc878fa91ec8691335c1db6e2929c3a7658efa$' || { echo "FAIL: image must be pinned to 2.37.2 with its digest"; exit 1; }
+echo "$dep" | yq e '.spec.template.spec.containers[0].image' - | grep -Eq '^ghcr\.io/advplyr/audiobookshelf:2\.38\.0@sha256:60064c23f32fd9099fd39e82c5132c51701d1221135bbca04cd099b589e1edc3$' || { echo "FAIL: image must be pinned to 2.38.0 with its digest"; exit 1; }
 [ "$(echo "$dep" | yq e '.spec.strategy.type' -)" = "Recreate" ] || { echo "FAIL: RWO volume needs Recreate"; exit 1; }
 [ "$(echo "$dep" | yq e '.spec.template.spec.enableServiceLinks' -)" = "false" ] || { echo "FAIL: service-link env vars must be off"; exit 1; }
 [ "$(echo "$dep" | yq e '.spec.replicas' -)" = "1" ] || { echo "FAIL: replicas must be 1"; exit 1; }

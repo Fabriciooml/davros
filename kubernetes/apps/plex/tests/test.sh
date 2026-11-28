@@ -9,7 +9,7 @@ echo "$built" | kubeconform -strict -ignore-missing-schemas -summary
 dep=$(echo "$built" | yq e 'select(.kind == "Deployment" and .metadata.name == "plex")' -)
 [ -n "$dep" ] || { echo "FAIL: no Deployment plex"; exit 1; }
 [ "$(echo "$dep" | yq e '.metadata.namespace' -)" = "plex" ] || { echo "FAIL: must live in plex"; exit 1; }
-echo "$dep" | yq e '.spec.template.spec.containers[0].image' - | grep -Eq '^plexinc/pms-docker:1\.43\.0\.10492-121068a07@sha256:[0-9a-f]{64}$' || { echo "FAIL: image must be pinned to 1.43.0.10492-121068a07 with a digest"; exit 1; }
+echo "$dep" | yq e '.spec.template.spec.containers[0].image' - | grep -Eq '^plexinc/pms-docker:1\.43\.5\.11079-b3b13e506@sha256:[0-9a-f]{64}$' || { echo "FAIL: image must be pinned to 1.43.5.11079-b3b13e506 with a digest"; exit 1; }
 [ "$(echo "$dep" | yq e '.spec.strategy.type' -)" = "Recreate" ] || { echo "FAIL: RWO volume needs Recreate"; exit 1; }
 [ "$(echo "$dep" | yq e '.spec.template.spec.enableServiceLinks' -)" = "false" ] || { echo "FAIL: service-link env vars must be off"; exit 1; }
 [ "$(echo "$dep" | yq e '.spec.replicas' -)" = "0" ] || { echo "FAIL: replicas must be 0 until cutover"; exit 1; }

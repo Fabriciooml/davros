@@ -9,7 +9,7 @@ echo "$built" | kubeconform -strict -ignore-missing-schemas -summary
 dep=$(echo "$built" | yq e 'select(.kind == "Deployment" and .metadata.name == "radarr")' -)
 [ -n "$dep" ] || { echo "FAIL: no Deployment radarr"; exit 1; }
 [ "$(echo "$dep" | yq e '.metadata.namespace' -)" = "arr" ] || { echo "FAIL: must live in arr"; exit 1; }
-echo "$dep" | yq e '.spec.template.spec.containers[0].image' - | grep -Eq '^ghcr\.io/hotio/radarr:release-6\.3\.0\.10514@sha256:[0-9a-f]{64}$' || { echo "FAIL: image must be pinned to 6.3.0.10514 with a digest"; exit 1; }
+echo "$dep" | yq e '.spec.template.spec.containers[0].image' - | grep -Eq '^ghcr\.io/hotio/radarr:release-7\.0\.3\.10918@sha256:[0-9a-f]{64}$' || { echo "FAIL: image must be pinned to 7.0.3.10918 with a digest"; exit 1; }
 [ "$(echo "$dep" | yq e '.spec.strategy.type' -)" = "Recreate" ] || { echo "FAIL: RWO volume needs Recreate"; exit 1; }
 [ "$(echo "$dep" | yq e '.spec.template.spec.enableServiceLinks' -)" = "false" ] || { echo "FAIL: service-link env vars must be off"; exit 1; }
 [ "$(echo "$dep" | yq e '.spec.progressDeadlineSeconds' -)" = "1200" ] || { echo "FAIL: progressDeadlineSeconds must be 1200"; exit 1; }

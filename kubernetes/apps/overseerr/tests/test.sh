@@ -8,7 +8,7 @@ echo "$built" | kubeconform -strict -ignore-missing-schemas -summary
 
 dep=$(echo "$built" | yq e 'select(.kind == "Deployment" and .metadata.name == "overseerr")' -)
 [ -n "$dep" ] || { echo "FAIL: no Deployment overseerr"; exit 1; }
-[ "$(echo "$dep" | yq e '.spec.template.spec.containers[0].image' -)" = "ghcr.io/seerr-team/seerr:v3.1.0@sha256:27602401178d54f1964442287b9f23f67a3fa2252645ee8065839ea1c3f69e45" ] || { echo "FAIL: image must stay pinned to the running v3.1.0 digest"; exit 1; }
+[ "$(echo "$dep" | yq e '.spec.template.spec.containers[0].image' -)" = "ghcr.io/seerr-team/seerr:v3.5.2@sha256:aadee014b40e28cf9aa4928bc9d1183a6eb08f8c44d543cddc9efdcb16549be2" ] || { echo "FAIL: image must stay pinned to the running v3.1.0 digest"; exit 1; }
 [ "$(echo "$dep" | yq e '.spec.strategy.type' -)" = "Recreate" ] || { echo "FAIL: RWO volume needs Recreate"; exit 1; }
 [ "$(echo "$dep" | yq e '.spec.template.spec.enableServiceLinks' -)" = "false" ] || { echo "FAIL: service-link env vars must be off"; exit 1; }
 [ "$(echo "$dep" | yq e '.spec.progressDeadlineSeconds' -)" = "1200" ] || { echo "FAIL: progressDeadlineSeconds must be 1200"; exit 1; }

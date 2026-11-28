@@ -15,7 +15,7 @@ cj=$(echo "$built" | yq e 'select(.kind == "CronJob" and .metadata.name == "conf
 [ "$(echo "$cj" | yq e '.spec.concurrencyPolicy' -)" = "Forbid" ] || { echo "FAIL: concurrencyPolicy must be Forbid"; exit 1; }
 [ "$(echo "$cj" | yq e '.spec.startingDeadlineSeconds' -)" = "600" ] || { echo "FAIL: startingDeadlineSeconds must be 600"; exit 1; }
 [ "$(echo "$cj" | yq e '.spec.jobTemplate.spec.backoffLimit' -)" = "1" ] || { echo "FAIL: backoffLimit must be 1"; exit 1; }
-echo "$cj" | yq e '.spec.jobTemplate.spec.template.spec.containers[0].image' - | grep -Eq '^ghcr\.io/raydak-labs/configarr:1\.30\.2@sha256:[0-9a-f]{64}$' || { echo "FAIL: image must be pinned to 1.30.2 with a digest"; exit 1; }
+echo "$cj" | yq e '.spec.jobTemplate.spec.template.spec.containers[0].image' - | grep -Eq '^ghcr\.io/raydak-labs/configarr:1\.40\.0@sha256:[0-9a-f]{64}$' || { echo "FAIL: image must be pinned to 1.40.0 with a digest"; exit 1; }
 [ "$(echo "$cj" | yq e '.spec.jobTemplate.spec.template.spec.restartPolicy' -)" = "Never" ] || { echo "FAIL: restartPolicy must be Never"; exit 1; }
 [ "$(echo "$cj" | yq e '.spec.jobTemplate.spec.template.spec.containers[0].volumeMounts[] | select(.mountPath == "/app/repos") | .name' -)" = "repos" ] || { echo "FAIL: /app/repos cache missing"; exit 1; }
 [ "$(echo "$cj" | yq e '.spec.jobTemplate.spec.template.spec.containers[0].volumeMounts[] | select(.mountPath == "/app/config/config.yml") | .subPath' -)" = "config.yml" ] || { echo "FAIL: config.yml must be mounted by subPath"; exit 1; }
