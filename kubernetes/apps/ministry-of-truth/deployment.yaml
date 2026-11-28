@@ -16,7 +16,7 @@ spec:
       labels:
         app: ministry-of-truth
       annotations:
-        fabriciooml.dev/image-digest: sha256:0000000000000000000000000000000000000000000000000000000000000000 # {"$imagepolicy": "flux-system:ministry-of-truth:digest"}
+        fabriciooml.dev/image-digest: sha256:20c81087a76005eb3917788a3e469e44a134d7a560b7caf76988bef5bbaca906 # {"$imagepolicy": "flux-system:ministry-of-truth:digest"}
     spec:
       enableServiceLinks: false
       securityContext:
